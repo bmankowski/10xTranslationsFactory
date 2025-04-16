@@ -1,9 +1,10 @@
 {
-  "name": "10x-astro-starter",
+  "name": "10x-translations-factory",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "clean": "rm -rf .astro dist node_modules/.vite",
+    "dev": "npm run clean && astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -12,14 +13,14 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@astrojs/node": "^9.1.3",
-    "@astrojs/react": "4.2.2",
+    "@astrojs/node": "^9.2.0",
+    "@astrojs/react": "^4.2.4",
     "@astrojs/sitemap": "3.3.0",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/vite": "4.0.17",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
-    "astro": "5.5.5",
+    "astro": "^5.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.487.0",
@@ -28,6 +29,9 @@
     "tailwind-merge": "^3.1.0",
     "tailwindcss": "4.0.17",
     "tw-animate-css": "^1.2.5"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.37.0"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.7",
