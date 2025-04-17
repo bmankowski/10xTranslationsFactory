@@ -5,7 +5,7 @@ You are an experienced product manager tasked with creating a comprehensive Prod
 </project_description>
 
 <project_details>
-{{project-details}} <- insert the planning session summary
+{{project-details}} <- insert th2e planning session summary
 </project_details>
 
 Follow these steps to create a comprehensive and well-structured document:
