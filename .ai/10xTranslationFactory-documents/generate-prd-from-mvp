@@ -1,0 +1,255 @@
+You are an experienced product manager tasked with creating a comprehensive Product Requirements Document (PRD) based on the descriptions below:
+
+<project_description>
+# AI-Powered Language Learning Platform
+
+## Project Overview
+The project aims to create an interactive language learning platform that leverages AI to generate personalized content and provide immediate feedback to learners.
+
+## Core Features
+
+### 1. AI Text Generation
+- Generate engaging, context-appropriate texts in multiple languages
+- Texts can be customized based on:
+  - User's proficiency level (beginner, intermediate, advanced)
+  - Specific topics or themes of interest
+  - Target vocabulary or grammar concepts
+  - Text length and complexity
+
+### 2. Question Generation
+- Automatically create various types of questions based on the generated text:
+  - Multiple choice questions
+  - Fill-in-the-blank exercises
+  - True/False statements
+  - Open-ended questions
+  - Grammar-focused questions
+- Questions will be available in both the target language and user's native language
+- Difficulty levels will adapt based on user performance
+
+### 3. Interactive Answer System
+- Users can input answers in their chosen language
+- Support for text input with special characters and accents
+- Voice input option for pronunciation practice
+- Real-time spell checking and basic grammar suggestions
+
+### 4. AI Assessment & Feedback
+- Immediate evaluation of user responses
+- Detailed feedback on:
+  - Grammar mistakes
+  - Vocabulary usage
+  - Sentence structure
+  - Context appropriateness
+- Personalized explanations for incorrect answers
+- Suggestions for improvement
+- Progress tracking and performance analytics
+
+## Technical Considerations
+
+### AI Components
+- Large Language Model for text generation and assessment
+- Natural Language Processing for language understanding
+- Speech recognition and synthesis for voice features
+
+### Platform Features
+- User authentication and profiles
+- Progress tracking and statistics
+- Spaced repetition system for review
+- Achievement and gamification elements
+- Mobile-responsive design
+
+### Language Support
+- Initial support for major languages:
+  - English
+  - Spanish
+  - French
+  - German
+  - Others based on demand
+- Ability to add new languages through modular design
+
+## Future Enhancements
+- Conversation practice with AI
+- Peer learning and community features
+- Custom content creation tools for teachers
+- Integration with popular language learning apps
+- Offline mode support
+- Mobile applications
+
+## Success Metrics
+- User engagement and retention
+- Learning progress measurements
+- User satisfaction surveys
+- Error reduction over time
+- Time to achieve proficiency goals
+</project_description>
+
+<project_details>
+# Language Learning Platform MVP (2-Week Implementation)
+
+## MVP Scope
+A simplified version of the language learning platform focusing on essential features to validate the core concept. The MVP will support English as the target language only.
+
+## Core MVP Features
+
+### 1. Basic Text Generation
+- Use OpenAI's API to generate simple texts (100-200 words)
+- Fixed difficulty level (intermediate)
+- Two predefined topics:
+  - Daily routines
+  - Travel conversations
+
+### 2. Question Generation
+- Generate questions for each text:
+  - 4 open questions
+
+### 3. Simple Answer System
+- Text-based input only
+
+### 4. Basic AI Assessment
+- Simple correct/incorrect evaluation
+- Basic feedback for wrong answers
+
+## Technical Implementation
+
+### Week 1 Goals
+1. Project Setup (Day 1)
+   - Set up React/Next.js project
+   - Configure OpenAI API integration
+   - Set up basic routing
+
+2. Text Generation (Days 2-3)
+   - Implement OpenAI API calls
+   - Create text generation prompts
+   - Build text display component
+
+3. Question Generation (Days 4-5)
+   - Implement question generation logic
+   - Create question display components
+
+### Week 2 Goals
+1. Answer System (Days 1-2)
+   - Build answer input components
+   - Implement answer validation
+   - Create basic UI for responses
+
+2. Assessment System (Days 3-4)
+   - Implement basic answer checking
+   - Add feedback display
+   - Create simple progress tracking
+
+3. Testing & Polish (Day 5)
+   - Bug fixing
+   - Basic styling
+   - User testing
+   - Documentation
+
+## Technical Stack
+- Frontend: Next.js + React
+- UI: Tailwind CSS
+- AI: OpenAI API
+- State Management: React Context
+- Deployment: Vercel
+
+## MVP Requirements
+- OpenAI API key
+- Modern web browser
+- Internet connection
+
+## Success Criteria
+- Users can generate at least 5 different texts
+- Questions are generated correctly for each text
+- Users can submit answers and receive feedback
+- Basic error handling works
+- Application runs without critical bugs
+
+## Out of MVP Scope
+- User authentication
+- Multiple languages
+- Voice input/output
+- Progress tracking
+- Advanced feedback
+- Mobile optimization
+- Database integration
+- Custom topics
+- Advanced analytics
+
+## Next Steps After MVP
+1. User testing and feedback collection
+2. Performance evaluation
+3. Feature prioritization for next iteration
+4. Scale planning 
+</project_details>
+
+Follow these steps to create a comprehensive and well-structured document:
+
+    Divide the PRD into the following sections: a. Project Overview
+    b. User Problem
+    c. Functional Requirements
+    d. Project Boundaries
+    e. User Stories
+    f. Success Metrics
+
+    In each section, provide detailed and relevant information based on the project description and clarifying questions. Make sure to:
+
+        Use clear and concise language
+
+        Provide specific details and data where necessary
+
+        Maintain consistency throughout the document
+
+        Address all items listed in each section
+
+    When creating user stories and acceptance criteria:
+
+        List ALL necessary user stories, including basic, alternative, and edge case scenarios
+
+        Assign a unique requirement ID (e.g., US-001) to each user story for direct traceability
+
+        Include at least one user story specifically for secure access or authentication, if the app requires user identification or access restrictions
+
+        Ensure no potential user interaction is omitted
+
+        Make sure each user story is testable
+
+Use the following structure for each user story:
+
+    ID
+
+    Title
+
+    Description
+
+    Acceptance Criteria
+
+    After completing the PRD, review it against this checklist:
+
+        Is every user story testable?
+
+        Are the acceptance criteria clear and specific?
+
+        Do we have enough user stories to build a fully functional application?
+
+        Have we included authentication and authorization requirements (if applicable)?
+
+    PRD formatting:
+
+        Maintain consistent formatting and numbering
+
+        Do not use bold formatting in markdown ( ** )
+
+        List ALL user stories
+
+        Format the PRD in valid markdown
+
+Prepare the PRD using the following structure:
+
+# Product Requirements Document (PRD) - {{app-name}}
+## 1. Product Overview
+## 2. User Problem
+## 3. Functional Requirements
+## 4. Product Boundaries
+## 5. User Stories
+## 6. Success Metrics
+
+Remember to fill out each section with detailed, relevant information based on the project description and our clarifying questions. Make sure the PRD is comprehensive, clear, and includes all essential information needed for further product development.
+
+The final output should consist only of the PRD, formatted in markdown as specified, and saved in the file prd.md.

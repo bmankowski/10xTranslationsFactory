@@ -3,8 +3,13 @@ description:
 globs: 
 alwaysApply: true
 ---
-# AI Rules for {app-name}
-
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI Rules for {10xTranslationsFactory}
+My name is Bartek
 {project-description}
 
 ## Tech Stack
