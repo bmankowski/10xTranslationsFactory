@@ -67,3 +67,4 @@ pnpm-lock.yaml
 .vercel
 .netlify
 
+scripts/*

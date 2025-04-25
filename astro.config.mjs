@@ -36,6 +36,6 @@ export default defineConfig({
       disabled: true,  // Wyłącza optymalizację zależności (jeśli to konieczne)
     },
     cacheDir: null
-  }
-  
+  },
+  adapter: node({ mode: 'standalone' })
 });
