@@ -1,0 +1,12 @@
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GenerateExerciseForm from '../../components/GenerateExerciseForm'; // Adjust path if needed
+
+// Assume middleware handles authentication check before rendering this page.
+---
+<BaseLayout title="Generate New Exercise">
+  <section class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Generate New Exercise</h1>
+    {/* Render the React form component, loading it client-side */}
+    <GenerateExerciseForm client:load />
+  </section>
+</BaseLayout> 

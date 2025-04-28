@@ -2,6 +2,7 @@
 
 ## 1. Product Overview
 The AI-Powered Language Learning Platform is an interactive educational tool that leverages artificial intelligence to generate personalized language learning content and provide immediate feedback to users learning English and Spanish. The platform aims to make language learning more engaging, effective, and tailored to individual needs by utilizing AI for text generation, question creation, and assessment in both English and Spanish.
+The application should work in chat form, asking the user formely prepared questions and correcting them by giving meaningful feedback. 
 
 This platform will initially support English and Spanish with a simple set of features that will validate the core concept and provide value to users from day one. The MVP will include basic text generation on user-defined topics and selected proficiency levels for English and Spanish, question generation for comprehension practice presented one by one, a text-based answer system, fundamental assessment capabilities, and user authentication with Google OAuth integration.
 
@@ -19,20 +20,18 @@ The AI-Powered Language Learning Platform addresses these problems by providing 
 
 ## 3. Functional Requirements
 
-### Text and questions generation
-- FR-001: The system must generate texts of 100-200 words using appropriate AI APIs (e.g., OpenAI, or potentially others depending on the language), considering the user-selected target language (English or Spanish) and proficiency level (beginner, intermediate, advanced). In the event of API failure, the system should display a clear error message and offer a retry option.
-- FR-002: The system must allow users to select their target language from the supported options: English and Spanish.
-- FR-003: The system must allow users to input any topic for text generation in their selected target language.
+### Text and questions generation part
+- FR-001: The system must allow users to select their target language from the supported options: English and Spanish.
+- FR-002: The system must allow users to input any topic for text generation in their selected target language.
+- FR-003: The system must generate texts of 100-200 words using appropriate AI APIs (e.g., OpenAI, or potentially others depending on the language), considering the user-selected target language (English or Spanish) and proficiency level (beginner, intermediate, advanced). In the event of API failure, the system should display a clear error message and offer a retry option.
 - FR-004: The system must display the generated text clearly on the user interface.
 - FR-005: The system must generate 4 open questions based on each generated text in the same target language (English or Spanish).
-- FR-006: The system must display one question at a time clearly after the text is presented.
 
-### Answer System
-- FR-007: The system must provide a text input interface for users to submit an answer to the currently displayed question in the target language (English or Spanish).
-- FR-008: The system must accept and process user-submitted answers in the target language (English or Spanish).
-- FR-009: The system must maintain the context between the generated text, the current question, and the submitted answer, all within the selected target language (English or Spanish).
-
-### Assessment and Feedback
+### Questions and Answers with Assessment and Feedback Part
+- FR-006: The system should display text and then maintain session of Questions and Answers in a form of a dialogue
+- FR-007: The system must display one question at a time clearly after the text is presented.
+- FR-008: The system provide a text input interface for users to submit an answer to that question as in chat application
+- FR-009: The system must accept and process user-submitted answers in the target language (English or Spanish).
 - FR-010: The system must evaluate user answers as correct or incorrect, taking into account the nuances of the target language (English or Spanish).
 - FR-011: The system must provide actionable, clear feedback for incorrect answers, offering specific guidance for user improvement in the target language (English or Spanish).
 - FR-012: The system must present the assessment result for the current question clearly to the user before proceeding to the next question.
@@ -96,10 +95,10 @@ The AI-Powered Language Learning Platform addresses these problems by providing 
 - User can input a topic for text generation.
 - User can select proficiency level (beginner, intermediate, advanced).
 - System generates a text of 100-200 words in the selected language on the entered topic at the selected level.
+- Generated text is displayed clearly on the screen.
 - System automatically generates 4 open questions based on the text in the same language (English or Spanish).
 - Questions are relevant to the content of the text.
 - Questions are varied in their focus (e.g., not all asking for the same type of information).
-- Generated text is displayed clearly on the screen.
 - The first question is displayed clearly after the text.
 - User can generate a new text if desired.
 
