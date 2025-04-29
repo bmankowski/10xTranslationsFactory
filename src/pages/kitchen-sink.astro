@@ -7,11 +7,11 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
-import { Toast, ToastAction } from '@/components/ui/toast';
 import { KitchenSinkSelect } from '@/components/KitchenSinkSelect';
 import { KitchenSinkCard } from '@/components/KitchenSinkCard';
 import { KitchenSinkForm } from '@/components/KitchenSinkForm';
 import { KitchenSinkAvatar } from '@/components/KitchenSinkAvatar';
+import { TestToast } from '@/components/TestToast';
 ---
 
 <Layout title="Kitchen Sink | 10xTranslationsFactory">
@@ -20,6 +20,14 @@ import { KitchenSinkAvatar } from '@/components/KitchenSinkAvatar';
       <h1 class="text-3xl font-bold mb-4">Kitchen Sink</h1>
       <p class="text-lg text-gray-600 mb-8">Showcase of all UI components available in this project</p>
     </div>
+
+    <!-- Toast Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Toasts</h2>
+      <div>
+        <TestToast client:load />
+      </div>
+    </section>
 
     <!-- Button Section -->
     <section class="space-y-4">
