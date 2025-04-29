@@ -4,9 +4,11 @@ console.log('Initializing Supabase client...');
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.SUPABASE_KEY;
+const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey;
 
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Key exists:', !!supabaseKey);
+console.log('Service Role Key exists:', !!serviceRoleKey);
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase environment variables. Please check your .env file.');
@@ -23,6 +25,20 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   global: {
     headers: {
       'x-application-name': 'translations-factory'
+    }
+  }
+});
+
+// Create a service role client that can bypass RLS
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false
+  },
+  global: {
+    headers: {
+      'x-application-name': 'translations-factory-admin'
     }
   }
 });
@@ -78,4 +94,4 @@ await testConnection().then(success => {
   }
 });
 
-export { supabase }; 
+export { supabase, supabaseAdmin }; 

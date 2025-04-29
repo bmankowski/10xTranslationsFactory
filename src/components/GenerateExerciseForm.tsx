@@ -262,12 +262,7 @@ export default function GenerateExerciseForm() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between items-center">
-          <div>
-            {(form.formError || dataError) && (
-              <p className="text-sm text-destructive">{form.formError || dataError}</p>
-            )}
-          </div>
+        <CardFooter className="flex justify-end items-center">
           <Button 
             type="submit" 
             disabled={

@@ -1,7 +1,7 @@
 import * as React from "react"
-import { toast as sonnerToast, type ToastT } from "sonner";
+import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
 
-export type ToastProps = ToastT;
+export type ToastProps = SonnerToast;
 
 type ToastActionElement = {
   altText: string;
@@ -9,51 +9,45 @@ type ToastActionElement = {
   children?: React.ReactNode;
 };
 
-export const toast = {
-  // Base toast function
-  toast(props: Partial<ToastT>) {
-    return sonnerToast(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
+type ToastOptions = Partial<ToastProps> & {
+  variant?: "default" | "destructive" | "success" | "info" | "warning";
+}
 
-  // Variants
-  default(props: Partial<ToastT>) {
-    return sonnerToast(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
-  destructive(props: Partial<ToastT>) {
-    return sonnerToast.error(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
-  success(props: Partial<ToastT>) {
-    return sonnerToast.success(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
-  info(props: Partial<ToastT>) {
-    return sonnerToast.info(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
-  warning(props: Partial<ToastT>) {
-    return sonnerToast.warning(props.title as string, {
-      description: props.description,
-      ...props,
-    });
-  },
+function toast(props: ToastOptions) {
+  const { variant, ...options } = props;
+  
+  switch (variant) {
+    case "destructive":
+      return sonnerToast.error(props.title as string, {
+        description: props.description,
+        ...options,
+      });
+    case "success":
+      return sonnerToast.success(props.title as string, {
+        description: props.description,
+        ...options,
+      });
+    case "info":
+      return sonnerToast.info(props.title as string, {
+        description: props.description,
+        ...options,
+      });
+    case "warning":
+      return sonnerToast.warning(props.title as string, {
+        description: props.description,
+        ...options,
+      });
+    default:
+      return sonnerToast(props.title as string, {
+        description: props.description,
+        ...options,
+      });
+  }
+}
 
-  // Utility functions
-  dismiss(toastId?: string) {
-    sonnerToast.dismiss(toastId);
-  },
+// Utility functions
+toast.dismiss = (toastId?: string) => {
+  sonnerToast.dismiss(toastId);
 };
 
 // For backwards compatibility
@@ -64,4 +58,5 @@ export function useToast() {
   };
 }
 
+export { toast };
 export type { ToastActionElement };

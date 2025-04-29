@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Button } from './ui/button';
-import { useToast } from './ui/use-toast';
+import { Button } from '../ui/button';
+import { useToast } from '../ui/use-toast';
 
 export function TestToast() {
   const { toast } = useToast();
