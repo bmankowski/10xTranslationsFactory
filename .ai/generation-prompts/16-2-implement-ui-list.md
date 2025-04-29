@@ -5,13 +5,13 @@ Your task is to implement a frontend view based on the provided implementation p
 First, review the implementation plan:
 
 <implementation_plan>
-15-1-generate-exercise-page-view-implementation-plan.md
+@15-2-exercises-list-view-implementation-plan.md
 </implementation_plan>
 
 Next, review the implementation rules:
 
 <implementation_rules>
-shared.mdc, @frontend.mdc, @astro.mdc, @react.mdc, @ui-shadcn-helper.mdc
+@shared.mdc, @frontend.mdc, @astro.mdc, @react.mdc, @ui-shadcn-helper.mdc
 </implementation_rules>
 
 Then, review the defined types:

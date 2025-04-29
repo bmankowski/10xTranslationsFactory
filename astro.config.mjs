@@ -5,11 +5,17 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
+import path from "path";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  integrations: [react(), sitemap()],
+  integrations: [
+    react({
+      include: ['**/*.tsx', '**/*.jsx'],
+    }), 
+    sitemap()
+  ],
   server: { 
     port: 3000,
     host: true  // This ensures binding to all network interfaces (0.0.0.0)
@@ -33,9 +39,9 @@ export default defineConfig({
     },
     clearScreen: false,  // Usuwa zbędne komunikaty na ekranie
     optimizeDeps: {
-      disabled: true,  // Wyłącza optymalizację zależności (jeśli to konieczne)
+      include: ['react', 'react-dom'],
     },
-    cacheDir: null
+    cacheDir: './node_modules/.vite'  // Set a valid path instead of null
   },
   adapter: node({ mode: 'standalone' })
 });

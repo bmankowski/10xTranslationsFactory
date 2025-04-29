@@ -1,0 +1,14 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import GenerateExerciseForm from '../../components/GenerateExerciseForm';
+---
+
+<Layout title="Generate New Exercise">
+  <main class="container mx-auto py-8 px-4">
+    <section>
+      <h1 class="text-3xl font-bold mb-6">Generate New Exercise</h1>
+      <p class="text-gray-600 mb-6">Configure the parameters below to generate a new learning text with comprehension questions.</p>
+      <GenerateExerciseForm client:load />
+    </section>
+  </main>
+</Layout> 

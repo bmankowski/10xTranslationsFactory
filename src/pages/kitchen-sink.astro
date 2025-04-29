@@ -1,0 +1,86 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/components/ui/use-toast';
+import { Toast, ToastAction } from '@/components/ui/toast';
+import { KitchenSinkSelect } from '@/components/KitchenSinkSelect';
+import { KitchenSinkCard } from '@/components/KitchenSinkCard';
+import { KitchenSinkForm } from '@/components/KitchenSinkForm';
+import { KitchenSinkAvatar } from '@/components/KitchenSinkAvatar';
+---
+
+<Layout title="Kitchen Sink | 10xTranslationsFactory">
+  <main class="container mx-auto p-8 space-y-12">
+    <div>
+      <h1 class="text-3xl font-bold mb-4">Kitchen Sink</h1>
+      <p class="text-lg text-gray-600 mb-8">Showcase of all UI components available in this project</p>
+    </div>
+
+    <!-- Button Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Buttons</h2>
+      <div class="flex flex-wrap gap-4">
+        <Button client:load>Default Button</Button>
+        <Button client:load variant="destructive">Destructive</Button>
+        <Button client:load variant="outline">Outline</Button>
+        <Button client:load variant="secondary">Secondary</Button>
+        <Button client:load variant="ghost">Ghost</Button>
+        <Button client:load variant="link">Link</Button>
+        <Button client:load disabled>Disabled</Button>
+      </div>
+    </section>
+
+    <!-- Input Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Inputs</h2>
+      <div class="max-w-sm space-y-2">
+        <Label client:load htmlFor="email">Email</Label>
+        <Input client:load id="email" type="email" placeholder="example@email.com" />
+      </div>
+    </section>
+
+    <!-- Avatar Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Avatars</h2>
+      <KitchenSinkAvatar client:load />
+    </section>
+
+    <!-- Switch Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Switch</h2>
+      <div class="flex items-center space-x-2">
+        <Switch client:load id="airplane-mode" />
+        <Label client:load htmlFor="airplane-mode">Airplane Mode</Label>
+      </div>
+    </section>
+
+    <!-- Select Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Select</h2>
+      <div class="max-w-sm">
+        <KitchenSinkSelect client:load />
+      </div>
+    </section>
+
+    <!-- Card Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Cards</h2>
+      <div class="max-w-md">
+        <KitchenSinkCard client:load />
+      </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">Form</h2>
+      <div class="max-w-md">
+        <KitchenSinkForm client:load />
+      </div>
+    </section>
+  </main>
+</Layout> 
