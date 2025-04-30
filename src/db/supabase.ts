@@ -15,6 +15,8 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// const supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+
 // Create Supabase client with custom configuration
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {

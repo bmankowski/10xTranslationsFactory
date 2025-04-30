@@ -13,4 +13,3 @@ Pages:
     /exercise/generate - Generate new exercises
     /exercises - List exercises
     /kitchen-sink - UI component showcase
-    /texts/[id] - View specific text exercise (dynamic route)
