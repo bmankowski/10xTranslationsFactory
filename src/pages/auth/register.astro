@@ -1,0 +1,31 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
+import { AuthFormLayout } from "../../components/auth/AuthFormLayout";
+
+// Set to SSR mode to ensure it's always rendered on the server
+export const prerender = false;
+---
+
+<Layout title="Create an Account">
+  <main class="flex flex-col items-center justify-center min-h-screen py-12 bg-background">
+    <AuthFormLayout 
+      title="Create an Account" 
+      description="Sign up to get started with our platform"
+      client:load
+    >
+      <RegisterForm 
+        onSubmit={(data) => {
+          // This is a client-side prop that will be replaced with actual implementation
+          // We're only defining the UI here
+          return Promise.resolve();
+        }}
+        onGoogleRegister={() => {
+          // This is a client-side prop that will be replaced with actual implementation
+          return Promise.resolve();
+        }}
+        client:load
+      />
+    </AuthFormLayout>
+  </main>
+</Layout> 
