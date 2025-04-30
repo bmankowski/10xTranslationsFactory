@@ -1,29 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormField } from "./FormField";
 import { Button } from "../ui/button";
 import { Form } from "../ui/form";
 import { GoogleAuthButton } from "./GoogleAuthButton";
 import { AuthError } from "./AuthError";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "./AuthContext";
 
 interface LoginFormProps {
-  onSubmit: (data: { email: string; password: string }) => Promise<void>;
-  onGoogleLogin: () => Promise<void>;
+  initialError?: string;
+  redirectTo?: string;
 }
 
-export function LoginForm({ onSubmit, onGoogleLogin }: LoginFormProps) {
+export function LoginForm({ initialError = "", redirectTo = "/dashboard" }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [isLoading, setIsLoading] = useState(false);
+  // Using optional chaining with useAuth to prevent server-side rendering errors
+  const auth = typeof window !== "undefined" ? useAuth() : null;
+
+  useEffect(() => {
+    if (initialError) {
+      setError(initialError);
+    }
+  }, [initialError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
+    if (!email) {
+      setError("Email is required");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password) {
+      setError("Password is required");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await onSubmit({ email, password });
+      // Only call login if auth is available (client-side)
+      if (auth) {
+        const { error: authError } = await auth.login(email, password);
+        if (authError) {
+          setError(authError.message);
+          return;
+        }
+        
+        // Redirect to the requested page or dashboard
+        window.location.href = redirectTo;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred during login");
     } finally {
@@ -36,10 +67,16 @@ export function LoginForm({ onSubmit, onGoogleLogin }: LoginFormProps) {
     setIsLoading(true);
 
     try {
-      await onGoogleLogin();
+      // Only call loginWithGoogle if auth is available (client-side)
+      if (auth) {
+        const { error: authError } = await auth.loginWithGoogle();
+        if (authError) {
+          setError(authError.message);
+        }
+        // Google OAuth redirects automatically so no need to redirect here
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred during Google login");
-    } finally {
       setIsLoading(false);
     }
   };

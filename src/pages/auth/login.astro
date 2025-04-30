@@ -2,30 +2,46 @@
 import Layout from "../../layouts/Layout.astro";
 import { LoginForm } from "../../components/auth/LoginForm";
 import { AuthFormLayout } from "../../components/auth/AuthFormLayout";
+import { AuthProvider } from "../../components/auth/AuthContext";
+import { createSupabaseServerInstance } from "../../lib/auth";
 
 // Set to SSR mode to ensure it's always rendered on the server
 export const prerender = false;
+
+// Check if user is already logged in
+const supabase = createSupabaseServerInstance({
+  headers: Astro.request.headers,
+  cookies: Astro.cookies
+});
+
+const { data: { session } } = await supabase.auth.getSession();
+
+// If user is logged in, redirect to dashboard or the specified redirectTo
+if (session) {
+  const redirectTo = Astro.url.searchParams.get('redirectTo') || '/dashboard';
+  return Astro.redirect(redirectTo);
+}
+
+// Get any error from previous login attempts
+const error = Astro.url.searchParams.get('error');
+const redirectTo = Astro.url.searchParams.get('redirectTo') || '/dashboard';
 ---
 
 <Layout title="Sign In">
   <main class="flex flex-col items-center justify-center min-h-screen py-12 bg-background">
-    <AuthFormLayout 
-      title="Sign In" 
-      description="Enter your credentials to access your account"
-      client:load
-    >
-      <LoginForm 
-        onSubmit={(data) => {
-          // This is a client-side prop that will be replaced with actual implementation
-          // We're only defining the UI here
-          return Promise.resolve();
-        }}
-        onGoogleLogin={() => {
-          // This is a client-side prop that will be replaced with actual implementation
-          return Promise.resolve();
-        }}
-        client:load
-      />
-    </AuthFormLayout>
+    <!-- Use client:only to ensure the AuthProvider only runs on the client side -->
+    <AuthProvider client:only="react">
+      <AuthFormLayout 
+        title="Sign In" 
+        description="Enter your credentials to access your account"
+        client:only="react"
+      >
+        <LoginForm 
+          initialError={error || ""}
+          redirectTo={redirectTo}
+          client:only="react" 
+        />
+      </AuthFormLayout>
+    </AuthProvider>
   </main>
 </Layout> 
