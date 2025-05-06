@@ -9,6 +9,10 @@ export const prerender = false;
 
 const session = await supabase.auth.getSession();
 const isLoggedIn = !!session;
+
+console.log(session);
+console.log(isLoggedIn);
+
 ---
 
 <Layout title="AI-Powered Language Learning - Learn English and Spanish">
@@ -113,7 +117,7 @@ const isLoggedIn = !!session;
             </a>
           ) : (
             <a href="/exercise/generate">
-              <Button size="lg" class="bg-white text-indigo-900 hover:bg-gray-100" client:load>
+              <Button size="lg" className="bg-white text-indigo-900 hover:bg-gray-100" client:load>
                 Generate New Exercise
               </Button>
             </a>
