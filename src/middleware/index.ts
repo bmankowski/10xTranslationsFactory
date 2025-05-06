@@ -7,7 +7,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	const url = new URL(request.url);
 	const pathname = url.pathname;
 
-	console.log('Testing middleware');
 
 	// Check if path requires authentication
 	const requiresAuth = isProtectedRoute(pathname);
