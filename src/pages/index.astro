@@ -8,12 +8,9 @@ export const prerender = false;
 // Check if user is already logged in to conditionally show UI elements
 
 const { data } = await supabase.auth.getSession();
-const session = data.session;
-const user = session?.user;
 
-const isLoggedIn = !!user;
+const isLoggedIn = !!data.session?.user;
 
-console.log(session);
 console.log(isLoggedIn);
 
 ---
