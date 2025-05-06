@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { supabase } from "../db/supabase";
+import { PasswordChangeForm } from "../components/PasswordChangeForm";
 
 export const prerender = false;
 
@@ -55,6 +56,10 @@ const user = data.session.user;
               <span class="text-blue-100/90">{new Date(user.last_sign_in_at || '').toLocaleString()}</span>
             </li>
           </ul>
+        </div>
+
+        <div class="mt-6">
+          <PasswordChangeForm client:load />
         </div>
       </div>
     </div>
