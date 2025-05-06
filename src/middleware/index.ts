@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { isProtectedRoute } from '../lib/auth';
-import { getSupabaseServerClient } from '../db/supabase';
+import { supabase } from  '@/db/supabase';
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { request, cookies, redirect } = context;
@@ -13,7 +13,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
 	if (requiresAuth) {
 		// Get server-side Supabase client with cookies
-		const supabase = getSupabaseServerClient(cookies, request);
 		
 		// Check if user is authenticated using getSession (not getUser)
 		const { data } = await supabase.auth.getSession();
