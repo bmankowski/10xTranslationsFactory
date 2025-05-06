@@ -2,14 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import ExercisesListContainer from '@/components/ExercisesListContainer.tsx';
 
-// Basic Authentication Check (Placeholder - ideally use middleware)
-// Redirects to login if no user session is found.
-// This assumes Astro.locals.user is populated by middleware.
-// See: https://docs.astro.build/en/guides/middleware/
-if (!Astro.locals.user) {
-  // TODO: Replace '/login' with the actual login route from your project setup
-  return Astro.redirect('/login');
-}
+
 ---
 <Layout title="My Exercises | 10xTranslationsFactory">
   <main class="container mx-auto py-8">

@@ -9,9 +9,12 @@ export const prerender = false;
 // Check if user is already logged in
 const { data } = await supabase.auth.getSession();
 
-// If already logged in, redirect to dashboard
+// Get redirect path from URL (if any)
+const redirectTo = Astro.url.searchParams.get('redirectTo') || '/';
+
+// If already logged in, redirect to the requested page or home
 if (data.session) {
-  return Astro.redirect('/dashboard');
+  return Astro.redirect(redirectTo);
 }
 
 // Get any error from previous login attempts
@@ -26,7 +29,7 @@ const error = Astro.url.searchParams.get('error');
     </div>
 
     <div class="bg-white p-8 rounded-lg shadow-md">
-      <form id="login-form" class="space-y-6">
+      <form id="login-form" class="space-y-6" data-redirect-to={redirectTo}>
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
@@ -52,6 +55,7 @@ const error = Astro.url.searchParams.get('error');
         </div>
         
         <div id="error-message" class="text-red-500 text-sm hidden"></div>
+        <div id="success-message" class="text-green-500 text-sm hidden"></div>
         
         <Button type="submit" id="submit-btn" className="w-full">Sign In</Button>
         
@@ -73,14 +77,27 @@ const error = Astro.url.searchParams.get('error');
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('login-form') as HTMLFormElement;
     const errorMsg = document.getElementById('error-message') as HTMLDivElement;
+    const successMsg = document.getElementById('success-message') as HTMLDivElement;
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     
+    // Check for URL error param and display if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlError = urlParams.get('error');
+    if (urlError && errorMsg) {
+      errorMsg.textContent = decodeURIComponent(urlError);
+      errorMsg.classList.remove('hidden');
+    }
+    
     if (form && errorMsg && submitBtn) {
+      // Get redirect path from data attribute
+      const redirectTo = form.dataset.redirectTo || '/';
+      
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Hide any previous error
+        // Hide any previous messages
         errorMsg.classList.add('hidden');
+        if (successMsg) successMsg.classList.add('hidden');
         
         // Disable button and show loading state
         submitBtn.disabled = true;
@@ -97,16 +114,27 @@ const error = Astro.url.searchParams.get('error');
           return;
         }
         
-        const email = emailInput.value;
+        const email = emailInput.value.trim();
         const password = passwordInput.value;
         
+        if (!email || !password) {
+          errorMsg.textContent = 'Please enter both email and password';
+          errorMsg.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Sign In';
+          return;
+        }
+        
         try {
+          console.log('Attempting login for:', email);
+          
           const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
+            credentials: 'include' // Important: include cookies
           });
           
           const data = await response.json();
@@ -120,8 +148,18 @@ const error = Astro.url.searchParams.get('error');
             return;
           }
           
-          // Redirect to dashboard on success
-          window.location.href = '/dashboard';
+          console.log('Login successful, redirecting to:', redirectTo);
+          
+          if (successMsg) {
+            successMsg.textContent = 'Login successful! Redirecting...';
+            successMsg.classList.remove('hidden');
+          }
+          
+          // Redirect after a short delay to allow the user to see the success message
+          setTimeout(() => {
+            // Reload the page to get a fresh session
+            window.location.href = redirectTo;
+          }, 500);
         } catch (err) {
           console.error('Login error:', err);
           errorMsg.textContent = 'An unexpected error occurred';

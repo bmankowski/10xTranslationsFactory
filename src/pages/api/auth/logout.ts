@@ -9,13 +9,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   cookies.delete('sb-access-token', { path: '/' });
   cookies.delete('sb-refresh-token', { path: '/' });
   
-  // Return success response
-  return new Response(JSON.stringify({ success: true }), { 
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  // Redirect to home page
+  return redirect('/', 302);
 };
 
 // Also support GET for direct navigation

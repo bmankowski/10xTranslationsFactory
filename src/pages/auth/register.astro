@@ -9,9 +9,12 @@ export const prerender = false;
 // Check if user is already logged in
 const { data } = await supabase.auth.getSession();
 
-// If already logged in, redirect to dashboard
+// Get redirect path from URL (if any)
+const redirectTo = Astro.url.searchParams.get('redirectTo') || '/';
+
+// If already logged in, redirect to the requested page or home
 if (data.session) {
-  return Astro.redirect('/dashboard');
+  return Astro.redirect(redirectTo);
 }
 ---
 
@@ -23,7 +26,7 @@ if (data.session) {
     </div>
 
     <div class="bg-white p-8 rounded-lg shadow-md">
-      <form id="register-form" class="space-y-6">
+      <form id="register-form" class="space-y-6" data-redirect-to={redirectTo}>
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
@@ -74,6 +77,9 @@ if (data.session) {
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     
     if (form && errorMsg && successMsg && submitBtn) {
+      // Get redirect path from data attribute
+      const redirectTo = form.dataset.redirectTo || '/';
+      
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -127,8 +133,8 @@ if (data.session) {
             submitBtn.disabled = false;
             submitBtn.innerText = 'Create Account';
           } else {
-            // Redirect to dashboard on success
-            window.location.href = '/dashboard';
+            // Redirect to the specified redirect path
+            window.location.href = redirectTo;
           }
         } catch (err) {
           console.error('Registration error:', err);

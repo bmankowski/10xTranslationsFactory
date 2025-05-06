@@ -26,21 +26,35 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
     
-    if (authData.session) {
-      // Set auth cookies
+    if (authData && authData.session) {
+      // Set auth cookies - make sure to use the exact cookie names expected by Supabase
       cookies.set('sb-access-token', authData.session.access_token, {
         path: '/',
         sameSite: 'lax',
         secure: import.meta.env.PROD,
-        httpOnly: true
+        httpOnly: true,
+        maxAge: authData.session.expires_in // Set cookie to expire when the session does
       });
       
       cookies.set('sb-refresh-token', authData.session.refresh_token, {
         path: '/',
         sameSite: 'lax',
         secure: import.meta.env.PROD,
-        httpOnly: true
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30 // 30 days for refresh token
       });
+      
+      // Set user identity for client (non-sensitive data)
+      cookies.set('sb-user-id', authData.user.id, {
+        path: '/',
+        sameSite: 'lax',
+        secure: import.meta.env.PROD,
+        httpOnly: false, // Allows JavaScript to read this
+        maxAge: authData.session.expires_in
+      });
+      
+      // Log for debugging
+      console.log('Login successful, session established');
       
       // Return success with user data
       return new Response(
@@ -52,6 +66,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
     
+    console.error('Login failed: no session data returned');
     return new Response(
       JSON.stringify({ error: 'Authentication failed' }), 
       { status: 401 }

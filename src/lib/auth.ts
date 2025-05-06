@@ -1,5 +1,4 @@
 import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
-import type { Database } from '../db/database.types';
 
 /**
  * Cookie options for authentication cookies
@@ -21,12 +20,17 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
   });
 }
 
-
-
 /**
  * Helper to determine if a route requires authentication
  */
 export const isProtectedRoute = (pathname: string) => {
-  const protectedRoutes = ['/profile', '/settings'];
+  const protectedRoutes = [
+    '/dashboard', 
+    '/profile', 
+    '/settings', 
+    '/exercises',
+    '/lesson'
+  ];
+  
   return protectedRoutes.some(route => pathname.startsWith(route));
 }; 
