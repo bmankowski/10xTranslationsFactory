@@ -42,9 +42,14 @@ console.log(isLoggedIn);
                   </a>
                 </>
               ) : (
-                <a href="/dashboard">
+                <a href="/profile">
                   <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700" client:load>
-                    Go to Dashboard
+                    Go to profile
+                  </Button>
+                </a>
+                <a href="/exercises">
+                  <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700" client:load>
+                    Go to exercises
                   </Button>
                 </a>
               )}

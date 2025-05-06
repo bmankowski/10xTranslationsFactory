@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import { Toaster } from "../components/ui/toaster";
 import Topbar from "../components/Topbar.astro";
-import { getSupabaseClient } from "../lib/supabase-client";
+import { supabase } from "../db/supabase";
 
 interface Props {
   title?: string;
@@ -11,7 +11,7 @@ interface Props {
 const { title = "10x Astro Starter" } = Astro.props;
 
 // Get auth info server-side for components that need it
-const supabase = getSupabaseClient(Astro.cookies, Astro.request);
+
 const { data } = await supabase.auth.getSession();
 const session = data.session;
 const user = session?.user;

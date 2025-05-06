@@ -14,7 +14,6 @@ const useAuth = () => {
   // Placeholder implementation - replace with your actual auth logic
   // It should return the user object or null/undefined if not logged in
   // This example simulates a logged-in user
-  console.warn("Using placeholder useAuth hook!");
   return { user: { user_id: 'mock-user-123' }, isAuthenticated: true };
 };
 // --- End Auth Hook Assumption ---

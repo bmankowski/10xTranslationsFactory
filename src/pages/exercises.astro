@@ -1,13 +1,151 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import ExercisesListContainer from '@/components/ExercisesListContainer.tsx';
+import ExerciseLanguageFilter from '@/components/ExerciseLanguageFilter';
+import { fetchLanguages, fetchTexts } from '@/lib/apiClient';
+import { format } from 'date-fns';
+import type { LanguageDTO, TextDTO, UserDTO } from '@/types';
 
+// Server-side data fetching with error handling
+let languages: LanguageDTO[] = [];
+let activeLanguages: LanguageDTO[] = [];
+let fetchError = null;
 
+try {
+  languages = await fetchLanguages();
+  activeLanguages = languages.filter(lang => lang.is_active);
+} catch (err) {
+  console.error("Failed to fetch languages:", err);
+  fetchError = `Failed to load languages: ${err instanceof Error ? err.message : String(err)}`;
+}
+
+// Get language_id from URL query param if it exists
+const language_id = Astro.url.searchParams.get('language_id');
+
+// Get user from Astro.locals (assuming authentication middleware sets this)
+const user = Astro.locals.user as unknown as { user_id?: string };
+const isAuthenticated = !!user;
+
+// Log user object to check its structure
+console.log('User object:', JSON.stringify(user, null, 2));
+
+// Pagination parameters
+const limit = 10;
+const page = parseInt(Astro.url.searchParams.get('page') || '1');
+const offset = (page - 1) * limit;
+
+// Fetch texts based on current filters
+let texts: TextDTO[] = [];
+let totalItems = 0;
+let error = fetchError;
+
+if (isAuthenticated && !fetchError) {
+  try {
+    const textsResponse = await fetchTexts(limit, offset, language_id);
+    texts = textsResponse.items;
+    totalItems = textsResponse.total;
+  } catch (err) {
+    console.error("Failed to fetch texts:", err);
+    error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
+  }
+}
+
+// Since the type system is confused, let's handle the comparison more safely
+const userId = user && 'user_id' in user ? user.user_id : undefined;
+
+// Transform data for view
+const exerciseViewModels = texts.map((text: TextDTO) => ({
+  id: text.id,
+  title: text.title,
+  displayDate: format(new Date(text.created_at), 'MMMM d, yyyy'),
+  visibility: text.visibility,
+  languageName: text.language?.name ?? 'Unknown',
+  isOwner: text.user_id === user.user_id,
+}));
+
+const totalPages = Math.ceil(totalItems / limit);
 ---
+
 <Layout title="My Exercises | 10xTranslationsFactory">
   <main class="container mx-auto py-8">
     <h1 class="text-3xl font-bold mb-6">My Exercises</h1>
-    {/* Load the React component for interactive elements */}
-    <ExercisesListContainer client:load />
+    
+    <!-- Language Filter (client-side component) -->
+    {!error && (
+      <div class="mb-6">
+        <ExerciseLanguageFilter 
+          languages={activeLanguages} 
+          selectedLanguageId={language_id || null}
+          client:load
+        />
+      </div>
+    )}
+
+    {error && (
+      <div class="text-red-500 p-4 rounded border border-red-300 bg-red-50">
+        <p>{error}</p>
+        <a href={Astro.url.pathname} class="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm inline-block">
+          Retry
+        </a>
+      </div>
+    )}
+
+    <!-- Exercise Cards List -->
+    <div class="space-y-4">
+      {!error && exerciseViewModels.length === 0 ? (
+        <div class="p-8 text-center bg-gray-50 rounded-lg border border-gray-200">
+          <p class="text-gray-500 mb-4">No exercises found.</p>
+          <a href="/exercise/generate" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 inline-block">
+            Generate New Text
+          </a>
+        </div>
+      ) : (
+        exerciseViewModels.map(exercise => (
+          <div class="p-4 border rounded-lg shadow-sm">
+            <h3 class="font-medium">{exercise.title}</h3>
+            <div class="text-sm text-gray-500">
+              Language: {exercise.languageName} | Created: {exercise.displayDate} | 
+              Visibility: {exercise.visibility === 'public' ? 'Public' : 'Private'}
+            </div>
+            <div class="mt-2 flex space-x-2">
+              <a href={`/exercises/${exercise.id}/attempt`} class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                Reattempt
+              </a>
+              {exercise.isOwner && (
+                <form method="POST" action={`/api/texts/${exercise.id}`} class="inline">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                          onclick="return confirm('Are you sure you want to delete this exercise?')">
+                    Delete
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+
+    <!-- Pagination Controls -->
+    {totalPages > 1 && (
+      <div class="mt-6 flex justify-center gap-2">
+        {page > 1 && (
+          <a href={`?page=${page-1}${language_id ? `&language_id=${language_id}` : ''}`} 
+             class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+            Previous
+          </a>
+        )}
+        
+        <span class="px-3 py-1">
+          Page {page} of {totalPages}
+        </span>
+        
+        {page < totalPages && (
+          <a href={`?page=${page+1}${language_id ? `&language_id=${language_id}` : ''}`}
+             class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+            Next
+          </a>
+        )}
+      </div>
+    )}
   </main>
 </Layout> 

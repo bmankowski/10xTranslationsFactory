@@ -1,6 +1,19 @@
 import type { LanguageDTO, PaginatedListDTO, TextDTO } from '@/types';
 
-const BASE_URL = '/api'; // Adjust if your API routes are different
+// Determine if we're running in a browser or on the server
+const isBrowser = typeof window !== 'undefined';
+
+// Base URL handling for both client and server environments
+function getBaseUrl() {
+  if (isBrowser) {
+    // In browser, use relative URL
+    return '/api';
+  } else {
+    // In server (SSR), use absolute URL with environment variable or hardcoded default
+    // This should match your actual API server
+    return process.env.API_BASE_URL || 'http://localhost:3000/api';
+  }
+}
 
 // Helper to handle fetch responses
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -29,7 +42,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  * Fetches the list of available languages.
  */
 export async function fetchLanguages(): Promise<LanguageDTO[]> {
-  const response = await fetch(`${BASE_URL}/languages`);
+  const response = await fetch(`${getBaseUrl()}/languages`);
   // The API is expected to return LanguageDTO[] directly based on plan
   return handleResponse<LanguageDTO[]>(response);
 }
@@ -52,7 +65,7 @@ export async function fetchTexts(
   }
 
   // Ensure fetch uses credentials to send session cookies if needed
-  const response = await fetch(`${BASE_URL}/texts?${params.toString()}`, {
+  const response = await fetch(`${getBaseUrl()}/texts?${params.toString()}`, {
     credentials: 'include' // Important for session-based auth
   });
   return handleResponse<PaginatedListDTO<TextDTO>>(response);
@@ -63,7 +76,7 @@ export async function fetchTexts(
  * Requires authentication and ownership (handled by backend).
  */
 export async function deleteText(textId: string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/texts/${textId}`, {
+    const response = await fetch(`${getBaseUrl()}/texts/${textId}`, {
         method: 'DELETE',
         credentials: 'include' // Important for session-based auth
     });

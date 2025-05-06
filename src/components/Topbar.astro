@@ -1,9 +1,8 @@
 ---
-// Import the Supabase client function
-import { getSupabaseClient } from '../lib/supabase-client';
+import { supabase } from "../db/supabase";
 
 // Get user session
-const supabase = getSupabaseClient(Astro.cookies, Astro.request);
+
 const { data } = await supabase.auth.getSession();
 const session = data.session;
 const user = session?.user;
