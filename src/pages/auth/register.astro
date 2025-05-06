@@ -1,31 +1,143 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { RegisterForm } from "../../components/auth/RegisterForm";
-import { AuthFormLayout } from "../../components/auth/AuthFormLayout";
+import { Button } from "../../components/ui/button";
+import { supabase } from "../../db/supabase";
 
 // Set to SSR mode to ensure it's always rendered on the server
 export const prerender = false;
+
+// Check if user is already logged in
+const { data } = await supabase.auth.getSession();
+
+// If already logged in, redirect to dashboard
+if (data.session) {
+  return Astro.redirect('/dashboard');
+}
 ---
 
-<Layout title="Create an Account">
-  <main class="flex flex-col items-center justify-center min-h-screen py-12 bg-background">
-    <AuthFormLayout 
-      title="Create an Account" 
-      description="Sign up to get started with our platform"
-      client:load
-    >
-      <RegisterForm 
-        onSubmit={(data) => {
-          // This is a client-side prop that will be replaced with actual implementation
-          // We're only defining the UI here
-          return Promise.resolve();
-        }}
-        onGoogleRegister={() => {
-          // This is a client-side prop that will be replaced with actual implementation
-          return Promise.resolve();
-        }}
-        client:load
-      />
-    </AuthFormLayout>
-  </main>
-</Layout> 
+<Layout title="Register - 10x Translations Factory">
+  <div class="container max-w-md mx-auto py-16 px-4">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold">Create an Account</h1>
+      <p class="text-gray-600 mt-2">Join our language learning platform</p>
+    </div>
+
+    <div class="bg-white p-8 rounded-lg shadow-md">
+      <form id="register-form" class="space-y-6">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            minlength="6"
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p class="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
+        </div>
+        
+        <div id="error-message" class="text-red-500 text-sm hidden"></div>
+        <div id="success-message" class="text-green-500 text-sm hidden"></div>
+        
+        <Button type="submit" id="submit-btn" className="w-full">Create Account</Button>
+        
+        <div class="text-center text-sm mt-4">
+          <p>
+            Already have an account?
+            <a href="/auth/login" class="text-blue-600 hover:underline">Sign in</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('register-form') as HTMLFormElement;
+    const errorMsg = document.getElementById('error-message') as HTMLDivElement;
+    const successMsg = document.getElementById('success-message') as HTMLDivElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    
+    if (form && errorMsg && successMsg && submitBtn) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Hide any previous messages
+        errorMsg.classList.add('hidden');
+        successMsg.classList.add('hidden');
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Creating account...';
+        
+        const emailInput = document.getElementById('email') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+        
+        if (!emailInput || !passwordInput) {
+          errorMsg.textContent = 'Form inputs not found';
+          errorMsg.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Create Account';
+          return;
+        }
+        
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            // Show error message
+            errorMsg.textContent = data.error || 'Failed to create account';
+            errorMsg.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Create Account';
+            return;
+          }
+          
+          if (data.message === 'Email confirmation required') {
+            // Show confirmation message
+            form.reset();
+            successMsg.textContent = 'Please check your email to confirm your account';
+            successMsg.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Create Account';
+          } else {
+            // Redirect to dashboard on success
+            window.location.href = '/dashboard';
+          }
+        } catch (err) {
+          console.error('Registration error:', err);
+          errorMsg.textContent = 'An unexpected error occurred';
+          errorMsg.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Create Account';
+        }
+      });
+    }
+  });
+</script> 

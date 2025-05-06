@@ -27,11 +27,26 @@ export function getSupabaseClient(cookies: AstroCookies, request?: Request) {
     const accessToken = cookies.get('sb-access-token')?.value;
     const refreshToken = cookies.get('sb-refresh-token')?.value;
     
+    // Check for alternative cookie format (Supabase may use this format)
+    const supabaseAuthCookie = cookies.get('supabase-auth-token');
+    
     if (accessToken && refreshToken) {
+        // Set session if we have both tokens
         supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
         });
+    } else if (supabaseAuthCookie?.value) {
+        // Try to parse the auth cookie directly if it exists
+        try {
+            const [accessToken, refreshToken] = JSON.parse(supabaseAuthCookie.value);
+            supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            });
+        } catch (e) {
+            console.error('Failed to parse supabase auth cookie', e);
+        }
     }
 
     return supabase;
