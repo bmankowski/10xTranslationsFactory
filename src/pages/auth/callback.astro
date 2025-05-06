@@ -1,4 +1,4 @@
-import { createSupabaseServerInstance } from "../../lib/auth";
+import { supabase } from '../../db/supabase';
 
 export const prerender = false;
 
@@ -7,10 +7,7 @@ const code = url.searchParams.get('code');
 const next = url.searchParams.get('next') || '/dashboard';
 
 if (code) {
-  const supabase = createSupabaseServerInstance({
-    headers: Astro.request.headers,
-    cookies: Astro.cookies
-  });
+  
   
   // Exchange the code for a session
   await supabase.auth.exchangeCodeForSession(code);

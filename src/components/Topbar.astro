@@ -1,0 +1,54 @@
+---
+// Import the Supabase client function
+import { getSupabaseClient } from '../lib/supabase-client';
+
+// Get user session
+const supabase = getSupabaseClient(Astro.cookies, Astro.request);
+const { data } = await supabase.auth.getSession();
+const session = data.session;
+const user = session?.user;
+
+// Get user's name or email to display
+const displayName = user?.user_metadata?.name || user?.email || "";
+// Get first initials for avatar fallback
+const initials = displayName
+    ? displayName
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .substring(0, 2)
+    : "?";
+---
+
+<header class="border-b border-gray-200 bg-white py-3">
+    <div class="container mx-auto flex items-center justify-between px-4">
+        <a href="/" class="text-xl font-semibold">10x Translations Factory</a>
+
+        <div class="flex items-center gap-4">
+            {user ? (
+                <>
+                    <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                            {user.user_metadata?.avatar_url ? (
+                                <img src={user.user_metadata.avatar_url} alt={displayName} class="h-full w-full object-cover" />
+                            ) : (
+                                <span class="text-sm font-medium">{initials}</span>
+                            )}
+                        </div>
+                        <span class="hidden text-sm sm:inline">{displayName}</span>
+                    </div>
+                    <form action="/api/auth/logout" method="post">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
+                            Logout
+                        </button>
+                    </form>
+                </>
+            ) : (
+                <a href="/auth/login" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 py-2">
+                    Login
+                </a>
+            )}
+        </div>
+    </div>
+</header> 

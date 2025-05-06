@@ -1,12 +1,20 @@
 ---
 import "../styles/global.css";
 import { Toaster } from "../components/ui/toaster";
+import Topbar from "../components/Topbar.astro";
+import { getSupabaseClient } from "../lib/supabase-client";
 
 interface Props {
   title?: string;
 }
 
 const { title = "10x Astro Starter" } = Astro.props;
+
+// Get auth info server-side for components that need it
+const supabase = getSupabaseClient(Astro.cookies, Astro.request);
+const { data } = await supabase.auth.getSession();
+const session = data.session;
+const user = session?.user;
 ---
 
 <!doctype html>
@@ -19,8 +27,19 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <Topbar />
+    <main>
+      <slot />
+    </main>
     <Toaster client:load />
+    
+    <!-- Expose auth data to client-side JavaScript if needed -->
+    {user && (
+      <script define:vars={{ userId: user.id, userEmail: user.email }}>
+        // Make auth data available to client components that need it
+        window.userInfo = { userId, userEmail };
+      </script>
+    )}
   </body>
 </html>
 

@@ -1,99 +1,130 @@
+// src/db/supabase.ts
 import { createClient } from '@supabase/supabase-js';
+import { type AstroCookies } from 'astro';
 
-console.log('Initializing Supabase client...');
+export function getSupabaseServerClient(
+    cookies: AstroCookies,
+    request?: Request
+) {
+    const supabase = createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+        {
+            auth: {
+                flowType: 'pkce',
+                autoRefreshToken: false,
+                persistSession: false,
+                detectSessionInUrl: false
+            },
+            global: {
+                headers: {
+                    // Forward the Authorization header if it exists
+                    Authorization: request?.headers.get('Authorization') ?? ''
+                }
+            }
+        }
+    );
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_KEY;
-const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey;
-
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key exists:', !!supabaseKey);
-console.log('Service Role Key exists:', !!serviceRoleKey);
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables. Please check your .env file.');
-  throw new Error('Missing Supabase environment variables');
-}
-
-// const supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
-
-// Create Supabase client with custom configuration
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  },
-  global: {
-    headers: {
-      'x-application-name': 'translations-factory'
-    }
-  }
-});
-
-// Create a service role client that can bypass RLS
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  },
-  global: {
-    headers: {
-      'x-application-name': 'translations-factory-admin'
-    }
-  }
-});
-
-// Test connection to Supabase
-async function testConnection() {
-  console.log('=== Starting Supabase Connection Test ===');
-  try {
-    console.log('1. Testing auth connection...');
-    const { data: authData, error: authError } = await supabase.auth.getSession();
-    if (authError) {
-      console.error('❌ Auth connection test failed:', {
-        message: authError.message,
-        status: authError.status
-      });
-      return false;
-    }
-    console.log('✅ Auth connection successful');
-
-    console.log('2. Testing database connection...');
-    const { data: dbData, error: dbError } = await supabase
-      .from('texts')
-      .select('count')
-      .limit(1)
-      .single();
+    // Get access token and refresh token from cookies
+    const accessToken = cookies.get('sb-access-token')?.value;
+    const refreshToken = cookies.get('sb-refresh-token')?.value;
     
-    if (dbError) {
-      console.error('❌ Database connection test failed:', {
-        message: dbError.message,
-        details: dbError.details,
-        hint: dbError.hint,
-        code: dbError.code
-      });
-      return false;
+    // Check for alternative cookie format (Supabase may use this format)
+    const supabaseAuthCookie = cookies.get('supabase-auth-token');
+    
+    if (accessToken && refreshToken) {
+        // Set session if we have both tokens
+        supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+        });
+    } else if (supabaseAuthCookie?.value) {
+        // Try to parse the auth cookie directly if it exists
+        try {
+            const [accessToken, refreshToken] = JSON.parse(supabaseAuthCookie.value);
+            supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            });
+        } catch (e) {
+            console.error('Failed to parse supabase auth cookie', e);
+        }
     }
-    console.log('✅ Database connection successful');
 
-    console.log('✅ All connection tests passed!');
-    return true;
-  } catch (error) {
-    console.error('❌ Failed to connect to Supabase:', error instanceof Error ? error.message : 'Unknown error');
-    return false;
-  } finally {
-    console.log('=== Supabase Connection Test Complete ===');
-  }
+    return supabase;
 }
 
-// Test connection but don't exit on failure
-console.log('Running initial connection test...');
-await testConnection().then(success => {
-  if (!success) {
-    console.warn('⚠️ Supabase connection test failed. The application will continue but database operations may fail.');
-  }
-});
+/**
+ * Singleton Supabase client instance for server-side usage.
+ * This ensures we only create one instance of the Supabase client.
+ */
+let supabaseServerInstance: ReturnType<typeof createClient> | null = null;
 
-export { supabase, supabaseAdmin }; 
+/**
+ * Creates or returns a singleton Supabase client instance for server-side usage.
+ * This function ensures we only create one instance of the Supabase client.
+ * 
+ * @param cookies - Astro cookies object
+ * @param request - Optional request object
+ * @returns A Supabase client instance
+ */
+export function getSupabaseServerSingleton(
+    cookies: AstroCookies,
+    request?: Request
+) {
+    if (!supabaseServerInstance) {
+        supabaseServerInstance = getSupabaseServerClient(cookies, request);
+    } else {
+        // Update the session information from cookies
+        const accessToken = cookies.get('sb-access-token')?.value;
+        const refreshToken = cookies.get('sb-refresh-token')?.value;
+        
+        // Check for alternative cookie format
+        const supabaseAuthCookie = cookies.get('supabase-auth-token');
+        
+        if (accessToken && refreshToken) {
+            // Set session if we have both tokens
+            supabaseServerInstance.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            });
+        } else if (supabaseAuthCookie?.value) {
+            try {
+                const [accessToken, refreshToken] = JSON.parse(supabaseAuthCookie.value);
+                supabaseServerInstance.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+            } catch (e) {
+                console.error('Failed to parse supabase auth cookie', e);
+            }
+        }
+    }
+    
+    return supabaseServerInstance;
+}
+
+/**
+ * Creates a Supabase client instance for client-side usage.
+ * This function should be used in browser environments.
+ * 
+ * @returns A Supabase client instance
+ */
+export function createSupabaseClient() {
+    const supabase = createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+        {
+            auth: {
+                flowType: 'pkce',
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        }
+    );
+    
+    return supabase;
+}
+
+

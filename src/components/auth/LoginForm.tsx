@@ -5,7 +5,6 @@ import { Form } from "../ui/form";
 import { GoogleAuthButton } from "./GoogleAuthButton";
 import { AuthError } from "./AuthError";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "./AuthContext";
 
 interface LoginFormProps {
   initialError?: string;
@@ -18,7 +17,7 @@ export function LoginForm({ initialError = "", redirectTo = "/dashboard" }: Logi
   const [error, setError] = useState(initialError);
   const [isLoading, setIsLoading] = useState(false);
   // Using optional chaining with useAuth to prevent server-side rendering errors
-  const auth = typeof window !== "undefined" ? useAuth() : null;
+
 
   useEffect(() => {
     if (initialError) {
@@ -27,6 +26,7 @@ export function LoginForm({ initialError = "", redirectTo = "/dashboard" }: Logi
   }, [initialError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("handleSubmit");
     e.preventDefault();
     setError("");
     setIsLoading(true);
@@ -44,8 +44,11 @@ export function LoginForm({ initialError = "", redirectTo = "/dashboard" }: Logi
     }
 
     try {
-      // Only call login if auth is available (client-side)
+      console.log("auth", auth);
       if (auth) {
+        console.log("Email", email);
+        console.log("Password", password);
+
         const { error: authError } = await auth.login(email, password);
         if (authError) {
           setError(authError.message);

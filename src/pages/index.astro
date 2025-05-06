@@ -1,23 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Button } from "../components/ui/button";
-import { AuthProvider } from "../components/auth/AuthContext";
-import { createSupabaseServerInstance } from "../lib/auth";
+import { getSupabaseServerClient } from "../db/supabase";
 
 export const prerender = false;
 
 // Check if user is already logged in to conditionally show UI elements
-const supabase = createSupabaseServerInstance({
-  headers: Astro.request.headers,
-  cookies: Astro.cookies
-});
 
-const { data: { session } } = await supabase.auth.getSession();
+const { data: { session } } = await getSupabaseServerClient(Astro.cookies, Astro.request).auth.getSession();
 const isLoggedIn = !!session;
 ---
 
 <Layout title="AI-Powered Language Learning - Learn English and Spanish">
-  <AuthProvider client:only="react">
     <div class="relative w-full min-h-screen">
       <!-- Hero Section -->
       <section class="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 py-20">
@@ -38,7 +32,7 @@ const isLoggedIn = !!session;
                     </Button>
                   </a>
                   <a href="/auth/register">
-                    <Button size="lg" variant="outline" class="w-full sm:w-auto text-white border-white hover:bg-white/10" client:load>
+                    <Button size="lg" class="w-full sm:w-auto text-white border-white hover:bg-white/10" client:load>
                       Create Account
                     </Button>
                   </a>
@@ -127,5 +121,4 @@ const isLoggedIn = !!session;
         </div>
       </section>
     </div>
-  </AuthProvider>
 </Layout>

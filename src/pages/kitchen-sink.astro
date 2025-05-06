@@ -9,11 +9,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useToast } from '@/components/ui/use-toast';
 import { 
   KitchenSinkSelect,
-  KitchenSinkCard,
   KitchenSinkForm,
-  KitchenSinkAvatar,
   TestToast
 } from '@/components/kitchen-sink';
+// Import the Astro components directly
+import KitchenSinkCard from '@/components/kitchen-sink/KitchenSinkCard.astro';
+import KitchenSinkAvatar from '@/components/kitchen-sink/KitchenSinkAvatar.astro';
 ---
 
 <Layout title="Kitchen Sink | 10xTranslationsFactory">
@@ -57,7 +58,7 @@ import {
     <!-- Avatar Section -->
     <section class="space-y-4">
       <h2 class="text-2xl font-semibold">Avatars</h2>
-      <KitchenSinkAvatar client:load />
+      <KitchenSinkAvatar />
     </section>
 
     <!-- Switch Section -->
@@ -81,7 +82,7 @@ import {
     <section class="space-y-4">
       <h2 class="text-2xl font-semibold">Cards</h2>
       <div class="max-w-md">
-        <KitchenSinkCard client:load />
+        <KitchenSinkCard />
       </div>
     </section>
 
