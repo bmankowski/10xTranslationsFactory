@@ -4,9 +4,8 @@ import { useToast } from '../ui/use-toast';
 
 export function TestToast() {
   const { toast } = useToast();
-
   const showDefaultToast = () => {
-    toast.default({
+    toast({
       title: "Default Toast",
       description: "This is a default toast message",
     });

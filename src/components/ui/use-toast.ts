@@ -1,7 +1,12 @@
 import * as React from "react"
-import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
-export type ToastProps = SonnerToast;
+// Define our own ToastProps type based on Sonner's parameters
+export type ToastProps = Parameters<typeof sonnerToast>[1] & {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  variant?: "default" | "destructive" | "success" | "info" | "warning";
+};
 
 type ToastActionElement = {
   altText: string;
@@ -44,6 +49,12 @@ function toast(props: ToastOptions) {
       });
   }
 }
+
+// Add variant methods
+toast.success = (options: Omit<ToastOptions, 'variant'>) => toast({ ...options, variant: "success" });
+toast.destructive = (options: Omit<ToastOptions, 'variant'>) => toast({ ...options, variant: "destructive" });
+toast.info = (options: Omit<ToastOptions, 'variant'>) => toast({ ...options, variant: "info" });
+toast.warning = (options: Omit<ToastOptions, 'variant'>) => toast({ ...options, variant: "warning" });
 
 // Utility functions
 toast.dismiss = (toastId?: string) => {

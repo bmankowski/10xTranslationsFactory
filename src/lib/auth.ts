@@ -11,16 +11,6 @@ export const cookieOptions: CookieOptionsWithName = {
 };
 
 /**
- * Helper function to parse the cookie header into an array of cookies
- */
-function parseCookieHeader(cookieHeader: string): { name: string; value: string }[] {
-  return cookieHeader.split(';').map((cookie) => {
-    const [name, ...rest] = cookie.trim().split('=');
-    return { name, value: rest.join('=') };
-  });
-}
-
-/**
  * Helper to determine if a route requires authentication
  */
 export const isProtectedRoute = (pathname: string) => {
