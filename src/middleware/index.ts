@@ -23,6 +23,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
 			const redirectTo = encodeURIComponent(pathname + url.search);
 			return redirect(`/auth/login?redirectTo=${redirectTo}`);
 		}
+		else{
+			const { data: user } = await supabase.auth.getUser();
+			context.locals.user = user.user;
+		}
 	}
 
 	// Continue to the requested page

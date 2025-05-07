@@ -38,16 +38,20 @@ let texts: TextDTO[] = [];
 let totalItems = 0;
 let error = fetchError;
 
+
 if (isAuthenticated && !fetchError) {
   try {
+    console.log("Is Authenticated",isAuthenticated);
     const textsResponse = await fetchTexts(limit, offset, language_id);
     texts = textsResponse.items;
     totalItems = textsResponse.total;
+    console.log("Items",totalItems);
   } catch (err) {
     console.error("Failed to fetch texts:", err);
     error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
+
 
 // Since the type system is confused, let's handle the comparison more safely
 const userId = user && 'user_id' in user ? user.user_id : undefined;

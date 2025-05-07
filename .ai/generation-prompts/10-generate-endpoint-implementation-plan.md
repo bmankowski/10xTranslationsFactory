@@ -1,4 +1,4 @@
-You are an experienced software architect tasked with creating a detailed implementation plan for a REST API endpoint. Your plan will guide the development team in the effective and correct implementation of this endpoint.
+You are an experienced software architect tasked with creating a series of detailed implementation plans for a REST API endpoint. Your plan will guide the development team in the effective and correct implementation of all endpoints.
 
 Before we begin, review the following information:
 
@@ -14,7 +14,7 @@ Before we begin, review the following information:
 
 3. Type Definitions:
 <type_definitions>
-@src/types.md
+@src/types.ts
 </type_definitions>
 
 3. Tech stack:
@@ -60,7 +60,7 @@ Throughout the plan, ensure that:
 - Adapt to the provided technology stack
 - Follow the given implementation rules
 
-The final output should be a well-organized implementation plan in markdown format. Here is an example of the expected output:
+The final output should be a well-organized implementation plan in markdown format. Here is an example of the expected output for every endpoint:
 
 ```
 # API Endpoint Implementation Plan: [Endpoint Name]
@@ -101,6 +101,10 @@ The final output should be a well-organized implementation plan in markdown form
 ...
 ```
 
-Końcowe wyniki powinny składać się wyłącznie z planu wdrożenia w formacie markdown i nie powinny powielać ani powtarzać żadnej pracy wykonanej w sekcji analizy.
+The final results should consist solely of the implementation plan in markdown format and should not duplicate or repeat any work done in the analysis section.
 
-Pamiętaj, aby zapisać swój plan wdrożenia jako .ai/endpoint-implementation-plan.md. Upewnij się, że plan jest szczegółowy, przejrzysty i zapewnia kompleksowe wskazówki dla zespołu programistów.
+Remember to save every of your implementation plan as:
+ .ai/documents/api-plans/XXX-ENDPOINTNAME.md
+ (where XXX is the next document number, starting from 1). 
+ Ensure the plan is detailed, clear, and provides comprehensive guidance for the development team.
+ Create all needed endpoints. Do not stop untill all needed endpoints are created.
