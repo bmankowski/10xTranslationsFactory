@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase, supabaseAdmin } from '../../db/supabase';
+import { supabase } from '../../db/supabase';
 
 // Define schema for input validation
 const createTextSchema = z.object({
@@ -11,10 +11,6 @@ const createTextSchema = z.object({
   visibility: z.enum(['public', 'private'])
 });
 
-// This is a TEST/DEVELOPMENT user ID
-// Using the test user from .env SUPABASE_TEST_USER
-// You should change this to a real UUID of a user that exists in your auth.users table
-const TEST_USER_ID = '31e29687-10e5-4e98-b99e-976e9b475c2e';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -37,6 +33,8 @@ export const POST: APIRoute = async ({ request }) => {
     // Calculate word count
     const wordCount = sampleContent.split(/\s+/).filter(Boolean).length;
 
+    const { data: user } = await supabase.auth.getUser();
+    const user_id = user.user?.id;
     // Create text record in Supabase
     const textId = uuidv4();
     const textData = {
@@ -48,7 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
       topic,
       visibility,
       word_count: wordCount,
-      user_id: TEST_USER_ID,
+      user_id: user_id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -56,7 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('Attempting to create text with data:', textData);
 
     // Using the supabaseAdmin client to bypass RLS policies
-    let textResponse = await supabaseAdmin
+    let textResponse = await supabase
       .from('texts')
       .insert(textData)
       .select()
@@ -75,7 +73,7 @@ export const POST: APIRoute = async ({ request }) => {
         // Create a test text with an SQL function that bypasses foreign key check (admin use only!)
         try {
           console.log('Attempting to create text with raw SQL to bypass foreign key check');
-          const { data: textSQL, error: textSQLError } = await supabaseAdmin.rpc('create_text_without_user_check', { 
+          const { data: textSQL, error: textSQLError } = await supabase.rpc('create_text_without_user_check', { 
             text_id: textId,
             text_title: topic,
             text_content: sampleContent,
@@ -130,7 +128,7 @@ export const POST: APIRoute = async ({ request }) => {
           ];
           
           // Save questions to Supabase using admin client 
-          const { error: questionsError } = await supabaseAdmin
+          const { error: questionsError } = await supabase
             .from('questions')
             .insert(questions);
           
@@ -202,7 +200,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('Attempting to create questions:', questions);
 
     // Save questions to Supabase using admin client to bypass RLS
-    const { error: questionsError } = await supabaseAdmin
+    const { error: questionsError } = await supabase
       .from('questions')
       .insert(questions);
 
@@ -215,7 +213,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
       
       // Try to delete the text if questions creation fails
-      const { error: deleteError } = await supabaseAdmin
+      const { error: deleteError } = await supabase
         .from('texts')
         .delete()
         .eq('id', textId);
