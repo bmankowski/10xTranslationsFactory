@@ -4,7 +4,8 @@ import type { QuestionDTO } from '../../types'; // Ensure QuestionDTO is importe
 
 import ExerciseTextView from './ExerciseTextView';
 import ChatInterface from './ChatInterface';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Placeholder for ViewModel types - will be defined in a later step
 // import type { ChatMessageVM } from './viewModels';
@@ -27,11 +28,12 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
     isLoadingInitialData,
     isLoadingSubmission,
     error,
-    isLastQuestion,
-    handleAnswerSubmit, // Signature is now (answerText: string, questionId: string)
-    handleNextQuestion,
+    // isLastQuestion, // No longer directly needed here for a button
+    handleAnswerSubmit,
+    // handleNextQuestion, // No longer passed to ChatInterface
     // setChatMessages, // Not used directly here
     // setError, // Can be used for more granular error display if needed
+    isExerciseComplete,
   } = useExerciseChat(textId);
 
   if (isLoadingInitialData) {
@@ -57,20 +59,13 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
     return <div className="text-center p-8">Exercise data is not available.</div>;
   }
 
-  // Determine if the last question has been answered and feedback is shown
-  // This is for the NextButton's text ("Finish Exercise")
   const lastMessage = chatMessages.length > 0 ? chatMessages[chatMessages.length - 1] : null;
-  const isLastQuestionAnsweredAndFeedbackShown = 
-    isLastQuestion && 
-    lastMessage?.type === 'feedback_result' && 
-    lastMessage.questionId === currentQuestion?.id;
-
-  // The NextButton should be disabled if submission is in progress OR if it is the last question and it has been fully processed (completion message is next).
-  const isNextButtonActuallyDisabled = isLoadingSubmission || 
-    (lastMessage?.type === 'ai_question' && lastMessage?.questionId === 'completion');
-
-  // Show an inline error from submission if any
+  // Logic for isLastQuestionAnsweredAndFeedbackShown and isNextButtonActuallyDisabled removed as button is gone.
   const submissionError = error && (isLoadingSubmission || (lastMessage?.type === 'user_answer' && !chatMessages.some(m => m.type === 'feedback_result' && m.questionId === lastMessage.questionId))) ? error : null;
+
+  const handleReturnToExercises = () => {
+    window.location.href = '/exercises'; // Navigate to exercises list
+  };
 
   return (
     <div className="exercise-chat-island flex flex-col max-w-4xl mx-auto bg-slate-50 p-2 sm:p-6 rounded-xl shadow-xl min-h-[80vh]">
@@ -88,14 +83,20 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
 
       <ChatInterface
         messages={chatMessages}
-        currentQuestion={currentQuestion as QuestionDTO | null} // Cast needed if currentQuestion from hook can be undefined differently
-        onAnswerSubmit={handleAnswerSubmit} // Directly pass the hook's handler
-        onNextQuestion={handleNextQuestion}
+        currentQuestion={currentQuestion as QuestionDTO | null}
+        onAnswerSubmit={handleAnswerSubmit}
         isLoadingSubmission={isLoadingSubmission}
-        isNextButtonDisabled={isNextButtonActuallyDisabled}
-        isLastQuestion={isLastQuestion}
-        isLastQuestionAnsweredAndFeedbackShown={isLastQuestionAnsweredAndFeedbackShown || false}
+        // Removed props related to NextButton
       />
+
+      {isExerciseComplete && (
+        <div className="mt-8 p-4 text-center">
+          <Button onClick={handleReturnToExercises} size="lg" variant="outline">
+            <Home className="w-4 h-4 mr-2" />
+            Return to Exercises List
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button'; // Assuming Shadcn UI button path
 import { Input } from '@/components/ui/input';   // Assuming Shadcn UI input path
 import { SendHorizonal, Loader2 } from 'lucide-react';
@@ -12,6 +12,7 @@ export interface ChatInputAreaProps {
 
 const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, currentQuestion }) => {
   const [inputText, setInputText] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null); // Ref for the input element
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,12 +22,26 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, curr
     }
   };
 
+  useEffect(() => {
+    // When a new question becomes available and not loading, focus the input field.
+    if (currentQuestion && !isLoading && inputRef.current) {
+      inputRef.current.focus();
+      // Optionally, try to scroll into view, though focus often handles this.
+      // inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    // Clear input when currentQuestion becomes null (e.g. end of exercise before completion message)
+    if (!currentQuestion) {
+        setInputText('');
+    }
+  }, [currentQuestion, isLoading]); // Depend on currentQuestion and isLoading
+
   const isDisabled = isLoading || !currentQuestion;
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-white sticky bottom-0">
       <div className="flex items-center space-x-2">
         <Input
+          ref={inputRef} // Assign ref to the input
           type="text"
           placeholder={currentQuestion ? "Type your answer..." : "Waiting for question..."}
           value={inputText}

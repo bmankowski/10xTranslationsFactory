@@ -21,10 +21,35 @@ export function useExerciseChat(textId: string) {
   // Use a ref for startTimeCurrentQuestion to ensure the latest value is available in callbacks
   // without causing re-definitions of those callbacks due to startTimeCurrentQuestion changing.
   const startTimeCurrentQuestionRef = useRef<number | null>(null);
+  const [isExerciseComplete, setIsExerciseComplete] = useState<boolean>(false);
 
   // Derived state
   const currentQuestion: QuestionDTO | null = questions[currentQuestionIndex] || null;
   const isLastQuestion: boolean = currentQuestionIndex >= 0 && currentQuestionIndex === questions.length - 1;
+
+  // Function to proceed to the next question or complete the exercise
+  const proceedToNextStep = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      startTimeCurrentQuestionRef.current = Date.now();
+      setError(null);
+      const nextQuestionMessage: AIMessageVM = {
+        id: questions[nextIndex].id, type: 'ai_question', sender: 'ai',
+        text: questions[nextIndex].content, questionId: questions[nextIndex].id, timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, nextQuestionMessage]);
+    } else {
+      console.log("All questions answered!");
+      const completionMessage: ChatMessageVM = {
+        id: uuidv4(), type: 'ai_question', sender: 'ai',
+        text: "Congratulations! You have completed all questions for this exercise.",
+        questionId: 'completion', timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, completionMessage]);
+      setIsExerciseComplete(true);
+    }
+  }, [currentQuestionIndex, questions]);
 
   // Fetch initial exercise data (text and questions)
   useEffect(() => {
@@ -35,6 +60,7 @@ export function useExerciseChat(textId: string) {
     }
     setIsLoadingInitialData(true);
     setError(null);
+    setIsExerciseComplete(false);
 
     const fetchExerciseData = async () => {
       try {
@@ -168,6 +194,11 @@ export function useExerciseChat(textId: string) {
         timestamp: new Date().toISOString(),
       };
       setChatMessages(prev => [...prev, feedbackMessage]);
+      
+      // Automatically proceed to the next step after short delay to allow user to read feedback
+      setTimeout(() => {
+        proceedToNextStep();
+      }, 1500); // 1.5 second delay, adjust as needed
 
     } catch (err) {
       console.error("Error submitting answer:", err);
@@ -176,41 +207,7 @@ export function useExerciseChat(textId: string) {
     } finally {
       setIsLoadingSubmission(false);
     }
-  }, []); // Removed currentQuestion from dependencies as questionId is passed in, and startTime is a ref.
-  // Dependencies: empty or specific external stable functions if any.
-
-  // Handle progression to the next question
-  const handleNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      startTimeCurrentQuestionRef.current = Date.now(); // Set ref for next question
-      setError(null);
-
-      const nextQuestionMessage: AIMessageVM = {
-        id: questions[nextIndex].id,
-        type: 'ai_question',
-        sender: 'ai',
-        text: questions[nextIndex].content,
-        questionId: questions[nextIndex].id,
-        timestamp: new Date().toISOString(),
-      };
-      setChatMessages(prev => [...prev, nextQuestionMessage]);
-    } else {
-      // All questions answered
-      console.log("All questions answered!");
-      const completionMessage: ChatMessageVM = {
-        id: uuidv4(),
-        type: 'ai_question', // Or a new 'system_message' type
-        sender: 'ai',
-        text: "Congratulations! You have completed all questions for this exercise.",
-        questionId: 'completion',
-        timestamp: new Date().toISOString(),
-      };
-      setChatMessages(prev => [...prev, completionMessage]);
-      // Potentially disable further actions or navigate away
-    }
-  }, [currentQuestionIndex, questions]);
+  }, [proceedToNextStep]); // Dependency on proceedToNextStep
 
   return {
     textData,
@@ -223,9 +220,8 @@ export function useExerciseChat(textId: string) {
     error,
     isLastQuestion,
     handleAnswerSubmit,
-    handleNextQuestion,
     setChatMessages, // Exposing for potential direct manipulation if needed (e.g. error messages in chat)
     setError, // Exposing for more complex error handling in component
-    // startTimeCurrentQuestion is now internal via ref
+    isExerciseComplete,
   };
 } 
