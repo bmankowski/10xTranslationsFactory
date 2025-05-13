@@ -103,7 +103,7 @@ export default function GenerateExerciseForm() {
         const data = await response.json();
         
         // Redirect to the newly created exercise
-        window.location.href = `/texts/${data.text.id}`;
+        window.location.href = `/exercises/${data.text.id}`;
       } catch (error) {
         console.error("Error generating exercise:", error);
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";

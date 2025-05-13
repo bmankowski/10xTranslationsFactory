@@ -31,7 +31,7 @@ export interface ProficiencyLevelDTO {
 
 // User DTO and related command
 export interface UserDTO {
-  user_id: string;
+  id: string;
   email: string;
   full_name?: string;
   is_admin: boolean;
