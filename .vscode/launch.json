@@ -2,11 +2,64 @@
   "version": "0.2.0",
   "configurations": [
     {
+			"command": "./node_modules/.bin/astro dev",
+			"name": "Development server",
+			"request": "launch",
+			"type": "node-terminal"
+		},
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Astro (Server-side)",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/.astro/**/*.js"
+      ],
+      "smartStep": true,
+      "trace": true,
+      "sourceMapPathOverrides": {
+        "/@fs/*": "${workspaceFolder}/*",
+        "/*": "${workspaceFolder}/*",
+        "/src/*": "${workspaceFolder}/src/*",
+        "/@astrojs/*": "${workspaceFolder}/node_modules/@astrojs/*"
+      },
+      "runtimeArgs": ["--enable-source-maps"],
+      "console": "integratedTerminal",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**",
+        "${workspaceFolder}/.astro/**"
+      ],
+      "timeout": 30000
+    },
+    {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
+      "name": "Debug Chrome (Client)",
       "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}"
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/@fs/*": "${webRoot}/*",
+        "/*": "${webRoot}/*",
+        "/src/*": "${webRoot}/src/*"
+      },
+      "userDataDir": "/mnt/c/Users/bmankowski/AppData/Local/Google/Chrome/User Data/Debug",
+      "runtimeArgs": [
+        "--disable-web-security"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ]
     }
   ]
 }

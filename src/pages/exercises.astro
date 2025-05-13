@@ -23,10 +23,7 @@ const language_id = Astro.url.searchParams.get('language_id');
 
 // Get user from Astro.locals (assuming authentication middleware sets this)
 const user = Astro.locals.user as unknown as { user_id?: string };
-const isAuthenticated = !!user;
-
-// Log user object to check its structure
-console.log('User object:', JSON.stringify(user, null, 2));
+const isLoggedIn = !!user;
 
 // Pagination parameters
 const limit = 10;
@@ -38,20 +35,16 @@ let texts: TextDTO[] = [];
 let totalItems = 0;
 let error = fetchError;
 
-
-if (isAuthenticated && !fetchError) {
+if (isLoggedIn && !fetchError) {
   try {
-    console.log("Is Authenticated",isAuthenticated);
     const textsResponse = await fetchTexts(limit, offset, language_id);
-    texts = textsResponse.items;
-    totalItems = textsResponse.total;
-    console.log("Items",totalItems);
+    texts = textsResponse.texts;
+    totalItems = textsResponse.pagination.total;
   } catch (err) {
     console.error("Failed to fetch texts:", err);
     error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
-
 
 // Since the type system is confused, let's handle the comparison more safely
 const userId = user && 'user_id' in user ? user.user_id : undefined;

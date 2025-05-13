@@ -64,8 +64,9 @@ export async function fetchTexts(
     params.append('language_id', languageId);
   }
 
+  const exercisesURL = `${getBaseUrl()}/exercises?${params.toString()}`;
   // Ensure fetch uses credentials to send session cookies if needed
-  const response = await fetch(`${getBaseUrl()}/texts?${params.toString()}`, {
+  const response = await fetch(exercisesURL, {
     credentials: 'include' // Important for session-based auth
   });
   return handleResponse<PaginatedListDTO<TextDTO>>(response);
@@ -76,7 +77,7 @@ export async function fetchTexts(
  * Requires authentication and ownership (handled by backend).
  */
 export async function deleteText(textId: string): Promise<void> {
-    const response = await fetch(`${getBaseUrl()}/texts/${textId}`, {
+    const response = await fetch(`${getBaseUrl()}/exercises/${textId}`, {
         method: 'DELETE',
         credentials: 'include' // Important for session-based auth
     });

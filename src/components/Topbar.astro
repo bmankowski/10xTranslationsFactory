@@ -1,11 +1,8 @@
 ---
 import { supabase } from "../db/supabase";
 
-// Get user session
-
-const { data } = await supabase.auth.getSession();
-const session = data.session;
-const user = session?.user;
+// Get user from locals (set by middleware)
+const user = Astro.locals.user;
 
 // Get user's name or email to display
 const displayName = user?.user_metadata?.name || user?.email || "";

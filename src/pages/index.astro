@@ -3,15 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import { Button } from "../components/ui/button";
 import { supabase } from "../db/supabase";
 
-export const prerender = false;
-
-// Check if user is already logged in to conditionally show UI elements
-
-const { data } = await supabase.auth.getSession();
-
-const isLoggedIn = !!data.session?.user;
-
-console.log(isLoggedIn);
+// Get user from locals (set by middleware)
+const user = Astro.locals.user;
+const isLoggedIn = !!user;
 
 ---
 

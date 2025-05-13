@@ -168,8 +168,11 @@ export interface ListDTO<T> {
 }
 
 export interface PaginatedListDTO<T> {
-  items: T[];
-  total: number;
-  limit: number;
-  offset: number;
+  texts: T[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
 } 

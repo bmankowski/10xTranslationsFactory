@@ -87,7 +87,7 @@ export default function GenerateExerciseForm() {
         };
 
         // Make API call
-        const response = await fetch("/api/texts", {
+        const response = await fetch("/api/exercises", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

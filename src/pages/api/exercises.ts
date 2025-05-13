@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../db/supabase';
+import type { TextDTO } from '@/types';
 
 // Define schema for input validation
 const createTextSchema = z.object({
@@ -11,6 +12,87 @@ const createTextSchema = z.object({
   visibility: z.enum(['public', 'private'])
 });
 
+// Pagination defaults and limits
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 50;
+const DEFAULT_OFFSET = 0;
+
+export const GET: APIRoute = async ({ request }) => {
+  try {
+    // Get query parameters
+    const url = new URL(request.url);
+    const languageId = url.searchParams.get('language_id');
+    const proficiencyLevelId = url.searchParams.get('proficiency_level_id');
+    const visibility = url.searchParams.get('visibility');
+    
+    // Parse and validate pagination parameters
+    const limit = Math.min(
+      parseInt(url.searchParams.get('limit') || String(DEFAULT_LIMIT)),
+      MAX_LIMIT
+    );
+    const offset = Math.max(
+      parseInt(url.searchParams.get('offset') || String(DEFAULT_OFFSET)),
+      DEFAULT_OFFSET
+    );
+
+    // Build query
+    let query = supabase
+      .from('texts')
+      .select(`
+        *,
+        language:language_id (name),
+        proficiency_level:proficiency_level_id (name)
+      `, { count: 'exact' });
+
+    // Apply filters if provided
+    if (languageId) {
+      query = query.eq('language_id', languageId);
+    }
+    if (proficiencyLevelId) {
+      query = query.eq('proficiency_level_id', proficiencyLevelId);
+    }
+    if (visibility) {
+      query = query.eq('visibility', visibility);
+    }
+
+    // Apply pagination
+    query = query
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+
+    // Execute query
+    const { data: texts, error, count } = await query;
+
+    if (error) {
+      console.error('Error fetching texts:', error);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to fetch texts', 
+        details: error 
+      }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ 
+      texts,
+      pagination: {
+        total: count || 0,
+        limit,
+        offset,
+        hasMore: count ? offset + limit < count : false
+      }
+    }), { 
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error('Error in GET /api/exercises:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal Server Error', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }), { status: 500 });
+  }
+};
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -37,7 +119,7 @@ export const POST: APIRoute = async ({ request }) => {
     const user_id = user.user?.id;
     // Create text record in Supabase
     const textId = uuidv4();
-    const textData = {
+    const textData : TextDTO = {
       id: textId,
       title: topic,
       content: sampleContent,
