@@ -1,0 +1,35 @@
+---
+// src/pages/exercises/[textId]/attempt.astro
+import Layout from '../../../layouts/Layout.astro';
+import ExerciseChatIsland from '../../../components/exercise-chat/ExerciseChatIsland.tsx';
+
+// Astro.params should be directly available in the frontmatter script.
+const { textId } = Astro.params;
+
+// It's good practice to ensure textId is a string, though Astro typically provides it as such for file-based routes.
+if (typeof textId !== 'string') {
+  // Handle cases where textId might not be as expected, e.g. redirect or show an error.
+  // This could happen if the route was somehow accessed without a valid textId segment.
+  // For now, we can assume textId will be a string if the route matches correctly.
+  // If this page is ever rendered server-side without params, it could be an issue.
+  console.error('textId is not a string or is missing:', textId);
+  // Optionally, redirect or return an error response if textId is critical and missing/invalid
+  // return Astro.redirect('/exercises'); 
+}
+
+// TODO: Add proper auth check here based on project setup. Redirect if not authenticated.
+// Example: if (!Astro.locals.user) { return Astro.redirect('/login'); }
+
+const pageTitle = "Exercise Attempt";
+---
+<Layout title={pageTitle}>
+  <div class="container mx-auto p-4">
+    {textId && typeof textId === 'string' ? (
+      <ExerciseChatIsland client:load textId={textId} />
+    ) : (
+      <p class="text-red-500 font-semibold text-center">
+        Error: Exercise ID is missing or invalid. Please check the URL or return to the exercises list.
+      </p>
+    )}
+  </div>
+</Layout> 

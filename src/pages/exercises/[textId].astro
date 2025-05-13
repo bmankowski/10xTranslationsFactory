@@ -1,6 +1,6 @@
 ---
 import { supabase } from '../../db/supabase';
-import type { TextDTO } from '../../types';
+import type { TextDTO, QuestionDTO } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
 
@@ -36,7 +36,19 @@ if (error) {
   return Astro.redirect('/404');
 }
 
+// Fetch questions for the text
+const { data: questions, error: questionsError } = await supabase
+  .from('questions')
+  .select('*')
+  .eq('text_id', textId)
+  .order('created_at', { ascending: true });
+
+if (questionsError) {
+  console.error('Error fetching questions:', questionsError);
+}
+
 const textData = text as TextDTO;
+const questionsData = questions as QuestionDTO[];
 ---
 
 <Layout title={`${textData.title || textData.topic} - Exercise Details`}>
@@ -104,6 +116,28 @@ const textData = text as TextDTO;
                 <h4 class="font-medium text-white">Proficiency Level</h4>
                 <p class="text-gray-300">{textData.proficiency_level?.name ?? 'Unknown Level'}</p>
               </div>
+            </div>
+
+            <hr class="border-white/20" />
+
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-white">Questions</h3>
+              {questionsData && questionsData.length > 0 ? (
+                <div class="space-y-4">
+                  {questionsData.map((question, index) => (
+                    <div class="bg-white/5 rounded-lg p-4">
+                      <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-indigo-500/30 text-indigo-100 text-sm font-medium">
+                          {index + 1}
+                        </span>
+                        <p class="text-gray-200">{question.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p class="text-gray-400 italic">No questions available for this exercise.</p>
+              )}
             </div>
 
             <div class="flex justify-end mt-6">

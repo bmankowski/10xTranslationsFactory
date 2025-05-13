@@ -1,0 +1,231 @@
+// src/hooks/useExerciseChat.ts
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { TextDTO, QuestionDTO, SubmitResponseCommand, UserResponseDTO } from '../types';
+import type { ChatMessageVM, AIMessageVM, UserAnswerVM, FeedbackResultVM } from '../components/exercise-chat/viewModels';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for chat messages
+
+// Define the shape of the data expected from the assumed API endpoint
+interface ExerciseAttemptData {
+  text: TextDTO;
+  questions: QuestionDTO[];
+}
+
+export function useExerciseChat(textId: string) {
+  const [textData, setTextData] = useState<TextDTO | null>(null);
+  const [questions, setQuestions] = useState<QuestionDTO[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(-1);
+  const [chatMessages, setChatMessages] = useState<ChatMessageVM[]>([]);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState<boolean>(true);
+  const [isLoadingSubmission, setIsLoadingSubmission] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  // Use a ref for startTimeCurrentQuestion to ensure the latest value is available in callbacks
+  // without causing re-definitions of those callbacks due to startTimeCurrentQuestion changing.
+  const startTimeCurrentQuestionRef = useRef<number | null>(null);
+
+  // Derived state
+  const currentQuestion: QuestionDTO | null = questions[currentQuestionIndex] || null;
+  const isLastQuestion: boolean = currentQuestionIndex >= 0 && currentQuestionIndex === questions.length - 1;
+
+  // Fetch initial exercise data (text and questions)
+  useEffect(() => {
+    if (!textId) {
+      setError('Text ID is missing.');
+      setIsLoadingInitialData(false);
+      return;
+    }
+    setIsLoadingInitialData(true);
+    setError(null);
+
+    const fetchExerciseData = async () => {
+      try {
+        // --- API Call Placeholder ---
+        // This endpoint (`/api/exercises/${textId}/attempt-data`) is ASSUMED as per the implementation plan.
+        // It needs to be implemented in the backend to return { text: TextDTO, questions: QuestionDTO[] }.
+        console.log(`Fetching data for textId: ${textId}... (Simulating API call)`);
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000)); 
+
+        // --- Simulated API Response (replace with actual fetch call) ---
+        // const response = await fetch(`/api/exercises/${textId}/attempt-data`);
+        // if (!response.ok) {
+        //   throw new Error(`Failed to fetch exercise data: ${response.statusText}`);
+        // }
+        // const data: ExerciseAttemptData = await response.json();
+        
+        // --- Start of Placeholder Data ---
+        // Replace this with actual data from API call
+        const placeholderText: TextDTO = {
+          id: textId,
+          title: `Sample Text for ${textId}`,
+          content: `This is the main content for the exercise. It's a sample text to be read by the user. It might contain several paragraphs and details that questions will be based on. The actual content will be fetched from the backend. This text is specifically for exercise ID ${textId}. Language and proficiency would also be part of a real TextDTO.`,
+          language_id: 'lang-en', // Placeholder
+          proficiency_level_id: 'prof-b1', // Placeholder
+          topic: 'General Knowledge',
+          visibility: 'public',
+          word_count: 50,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        const placeholderQuestions: QuestionDTO[] = [
+          { id: uuidv4(), text_id: textId, content: 'What is the main topic of the text?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: uuidv4(), text_id: textId, content: 'Can you summarize the first paragraph?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: uuidv4(), text_id: textId, content: 'What is a key detail mentioned towards the end?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        ];
+        const data: ExerciseAttemptData = {
+            text: placeholderText,
+            questions: placeholderQuestions,
+        };
+        // --- End of Placeholder Data ---
+
+        if (!data.text || !data.questions || data.questions.length === 0) {
+          throw new Error('Fetched data is incomplete or no questions found.');
+        }
+
+        setTextData(data.text);
+        setQuestions(data.questions);
+        setCurrentQuestionIndex(0);
+        startTimeCurrentQuestionRef.current = Date.now(); // Set ref value
+        
+        // Add first question to chat messages
+        const firstQuestionMessage: AIMessageVM = {
+          id: data.questions[0].id,
+          type: 'ai_question',
+          sender: 'ai',
+          text: data.questions[0].content,
+          questionId: data.questions[0].id,
+          timestamp: new Date().toISOString(),
+        };
+        setChatMessages([firstQuestionMessage]);
+
+      } catch (err) {
+        console.error("Error fetching exercise data:", err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred while fetching data.');
+      } finally {
+        setIsLoadingInitialData(false);
+      }
+    };
+
+    fetchExerciseData();
+  }, [textId]);
+
+  // Handle answer submission - simplified signature
+  const handleAnswerSubmit = useCallback(async (answerText: string, questionId: string) => {
+    if (!startTimeCurrentQuestionRef.current) {
+      console.error("Cannot submit answer: start time for current question is not set.");
+      setError("An internal error occurred (timing issue).");
+      return;
+    }
+    const responseTimeMs = Date.now() - startTimeCurrentQuestionRef.current;
+    startTimeCurrentQuestionRef.current = null; // Reset for the current question attempt cycle
+
+    setIsLoadingSubmission(true);
+    setError(null);
+
+    const userAnswerMessage: UserAnswerVM = {
+      id: uuidv4(), type: 'user_answer', sender: 'user', text: answerText, questionId: questionId,
+      responseTimeMs: responseTimeMs, timestamp: new Date().toISOString(),
+    };
+    setChatMessages(prev => [...prev, userAnswerMessage]);
+
+    try {
+      const command: SubmitResponseCommand = { response_text: answerText, response_time: responseTimeMs };
+      // --- API Call Placeholder ---
+      // const response = await fetch(`/api/questions/${questionId}/responses`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(command),
+      // });
+      // if (!response.ok) {
+      //   // Handle API errors (400, 401, 403, 404, 500) as per plan
+      //   throw new Error(`Failed to submit answer: ${response.statusText}`);
+      // }
+      // const result: UserResponseDTO = await response.json();
+
+      // --- Simulated API Response ---
+      console.log(`Submitting answer for questionId: ${questionId}... (Simulating API call)`, command);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const result: UserResponseDTO = {
+        id: uuidv4(),
+        user_id: 'user-placeholder-id',
+        question_id: questionId,
+        response_text: answerText,
+        is_correct: Math.random() > 0.3, // Simulate correctness
+        feedback: Math.random() > 0.3 ? 'That is a good attempt! Consider this aspect... xyz.' : 'You are on the right track!',
+        response_time: responseTimeMs,
+        created_at: new Date().toISOString(),
+      };
+      // --- End of Simulated API Response ---
+
+      const feedbackMessage: FeedbackResultVM = {
+        id: result.id,
+        type: 'feedback_result',
+        sender: 'ai',
+        questionId: result.question_id,
+        originalAnswerText: result.response_text,
+        isCorrect: result.is_correct,
+        feedbackText: result.feedback,
+        userResponseId: result.id,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, feedbackMessage]);
+
+    } catch (err) {
+      console.error("Error submitting answer:", err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred while submitting answer.');
+      // Optionally, add an error message to chatMessages or allow retry for the specific message
+    } finally {
+      setIsLoadingSubmission(false);
+    }
+  }, []); // Removed currentQuestion from dependencies as questionId is passed in, and startTime is a ref.
+  // Dependencies: empty or specific external stable functions if any.
+
+  // Handle progression to the next question
+  const handleNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      startTimeCurrentQuestionRef.current = Date.now(); // Set ref for next question
+      setError(null);
+
+      const nextQuestionMessage: AIMessageVM = {
+        id: questions[nextIndex].id,
+        type: 'ai_question',
+        sender: 'ai',
+        text: questions[nextIndex].content,
+        questionId: questions[nextIndex].id,
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, nextQuestionMessage]);
+    } else {
+      // All questions answered
+      console.log("All questions answered!");
+      const completionMessage: ChatMessageVM = {
+        id: uuidv4(),
+        type: 'ai_question', // Or a new 'system_message' type
+        sender: 'ai',
+        text: "Congratulations! You have completed all questions for this exercise.",
+        questionId: 'completion',
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, completionMessage]);
+      // Potentially disable further actions or navigate away
+    }
+  }, [currentQuestionIndex, questions]);
+
+  return {
+    textData,
+    questions,
+    currentQuestionIndex,
+    currentQuestion,
+    chatMessages,
+    isLoadingInitialData,
+    isLoadingSubmission,
+    error,
+    isLastQuestion,
+    handleAnswerSubmit,
+    handleNextQuestion,
+    setChatMessages, // Exposing for potential direct manipulation if needed (e.g. error messages in chat)
+    setError, // Exposing for more complex error handling in component
+    // startTimeCurrentQuestion is now internal via ref
+  };
+} 
