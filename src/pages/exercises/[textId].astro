@@ -1,0 +1,119 @@
+---
+import { supabase } from '../../db/supabase';
+import type { TextDTO } from '../../types';
+import { formatDistanceToNow } from 'date-fns';
+import Layout from '../../layouts/Layout.astro';
+
+// Get text ID from params
+const { textId } = Astro.params;
+
+// Fetch text data
+const { data: text, error } = await supabase
+  .from('texts')
+  .select(`
+    *,
+    language:language_id (
+      id,
+      code,
+      name,
+      is_active,
+      created_at,
+      updated_at
+    ),
+    proficiency_level:proficiency_level_id (
+      id,
+      name,
+      display_order,
+      created_at,
+      updated_at
+    )
+  `)
+  .eq('id', textId)
+  .eq('is_deleted', false)
+  .single();
+
+if (error) {
+  return Astro.redirect('/404');
+}
+
+const textData = text as TextDTO;
+---
+
+<Layout title={`${textData.title || textData.topic} - Exercise Details`}>
+  <div class="relative w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
+    <main class="container mx-auto py-8 px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-lg p-6">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-white">
+                {textData.title || textData.topic}
+              </h1>
+              <p class="text-gray-300 mt-2">
+                Created {formatDistanceToNow(new Date(textData.created_at), { addSuffix: true })}
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                textData.visibility === 'public' 
+                  ? 'bg-purple-500/30 text-purple-100' 
+                  : 'bg-indigo-500/30 text-indigo-100'
+              }`}>
+                {textData.visibility}
+              </span>
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-indigo-500/30 text-indigo-100">
+                {textData.language?.name ?? 'Unknown Language'}
+              </span>
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-100">
+                {textData.proficiency_level?.name ?? 'Unknown Level'}
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-2 text-white">Content</h3>
+              <div class="prose prose-sm max-w-none text-gray-200">
+                {textData.content.split('\n').map((paragraph: string) => (
+                  <p class="mb-4">{paragraph}</p>
+                ))}
+              </div>
+            </div>
+
+            <hr class="border-white/20" />
+
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <h4 class="font-medium text-white">Word Count</h4>
+                <p class="text-gray-300">{textData.word_count} words</p>
+              </div>
+              <div>
+                <h4 class="font-medium text-white">Topic</h4>
+                <p class="text-gray-300">{textData.topic}</p>
+              </div>
+            </div>
+
+            <hr class="border-white/20" />
+
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <h4 class="font-medium text-white">Language</h4>
+                <p class="text-gray-300">{textData.language?.name ?? 'Unknown Language'} ({textData.language?.code ?? '??'})</p>
+              </div>
+              <div>
+                <h4 class="font-medium text-white">Proficiency Level</h4>
+                <p class="text-gray-300">{textData.proficiency_level?.name ?? 'Unknown Level'}</p>
+              </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+              <a href={`/exercises/${textId}/attempt`} class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100">
+                Take Exercise
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout> 
