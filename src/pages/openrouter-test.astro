@@ -1,0 +1,27 @@
+---
+import OpenRouterChat from "../components/OpenRouterChat";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Test OpenRouter API">
+  <main class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">OpenRouter API Test</h1>
+    <OpenRouterChat client:load />
+    
+    <div class="mt-8 p-4 bg-blue-50 rounded-lg max-w-2xl mx-auto">
+      <h2 class="text-xl font-bold mb-2">About this test page</h2>
+      <p class="mb-2">
+        This page allows you to test the OpenRouter API integration. You can:
+      </p>
+      <ul class="list-disc pl-6 mb-4">
+        <li>Send messages to different types of specialized AI assistants</li>
+        <li>Select from predefined system prompts for different use cases</li>
+        <li>Create your own custom system prompt for testing</li>
+        <li>See the raw response from the OpenRouter API</li>
+      </ul>
+      <p class="text-sm text-gray-600">
+        Note: This page requires a valid OpenRouter API key to be set in the environment variables.
+      </p>
+    </div>
+  </main>
+</Layout> 
