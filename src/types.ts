@@ -97,8 +97,7 @@ export interface CreateTextCommand {
 }
 
 // Response DTO that includes the created text and the generated questions
-export interface CreateTextResponseDTO {
-  text: TextDTO;
+export interface TextWithQuestionsDTO extends TextDTO {
   questions: QuestionDTO[];
 }
 

@@ -1,17 +1,20 @@
 ---
 import { supabase } from '../../db/supabase';
-import type { TextDTO, QuestionDTO } from '../../types';
+import type { TextDTO, QuestionDTO, TextWithQuestionsDTO } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
 
 // Get text ID from params
 const { textId } = Astro.params;
 
-// Fetch text data
-const { data: text, error } = await supabase
+// Fetch text data with related entities
+const { data: textData, error: textError } = await supabase
   .from('texts')
   .select(`
-    *,
+    id,
+    title,
+    content,
+    language_id,
     language:language_id (
       id,
       code,
@@ -20,24 +23,31 @@ const { data: text, error } = await supabase
       created_at,
       updated_at
     ),
+    proficiency_level_id,
     proficiency_level:proficiency_level_id (
       id,
       name,
       display_order,
       created_at,
       updated_at
-    )
+    ),
+    topic,
+    visibility,
+    word_count,
+    user_id,
+    created_at,
+    updated_at
   `)
   .eq('id', textId)
   .eq('is_deleted', false)
   .single();
 
-if (error) {
+if (textError) {
   return Astro.redirect('/404');
 }
 
 // Fetch questions for the text
-const { data: questions, error: questionsError } = await supabase
+const { data: questionsData, error: questionsError } = await supabase
   .from('questions')
   .select('*')
   .eq('text_id', textId)
@@ -45,13 +55,31 @@ const { data: questions, error: questionsError } = await supabase
 
 if (questionsError) {
   console.error('Error fetching questions:', questionsError);
+  return Astro.redirect('/500');
 }
 
-const textData = text as TextDTO;
-const questionsData = questions as QuestionDTO[];
+// Construct TextWithQuestionsDTO
+const exerciseData: TextWithQuestionsDTO = {
+  text: {
+    id: textData.id,
+    title: textData.title,
+    content: textData.content,
+    language_id: textData.language_id,
+    language: Array.isArray(textData.language) ? textData.language[0] : textData.language,
+    proficiency_level_id: textData.proficiency_level_id,
+    proficiency_level: Array.isArray(textData.proficiency_level) ? textData.proficiency_level[0] : textData.proficiency_level,
+    topic: textData.topic,
+    visibility: textData.visibility,
+    word_count: textData.word_count,
+    user_id: textData.user_id,
+    created_at: textData.created_at,
+    updated_at: textData.updated_at
+  },
+  questions: questionsData || []
+};
 ---
 
-<Layout title={`${textData.title || textData.topic} - Exercise Details`}>
+<Layout title={`${exerciseData.text.title || exerciseData.text.topic} - Exercise Details`}>
   <div class="relative w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
     <main class="container mx-auto py-8 px-4">
       <div class="max-w-4xl mx-auto">
@@ -59,25 +87,25 @@ const questionsData = questions as QuestionDTO[];
           <div class="flex justify-between items-start mb-6">
             <div>
               <h1 class="text-2xl font-bold text-white">
-                {textData.title || textData.topic}
+                {exerciseData.text.title || exerciseData.text.topic}
               </h1>
               <p class="text-gray-300 mt-2">
-                Created {formatDistanceToNow(new Date(textData.created_at), { addSuffix: true })}
+                Created {formatDistanceToNow(new Date(exerciseData.text.created_at), { addSuffix: true })}
               </p>
             </div>
             <div class="flex gap-2">
               <span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                textData.visibility === 'public' 
+                exerciseData.text.visibility === 'public' 
                   ? 'bg-purple-500/30 text-purple-100' 
                   : 'bg-indigo-500/30 text-indigo-100'
               }`}>
-                {textData.visibility}
+                {exerciseData.text.visibility}
               </span>
               <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-indigo-500/30 text-indigo-100">
-                {textData.language?.name ?? 'Unknown Language'}
+                {exerciseData.text.language?.name ?? 'Unknown Language'}
               </span>
               <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-100">
-                {textData.proficiency_level?.name ?? 'Unknown Level'}
+                {exerciseData.text.proficiency_level?.name ?? 'Unknown Level'}
               </span>
             </div>
           </div>
@@ -86,7 +114,7 @@ const questionsData = questions as QuestionDTO[];
             <div>
               <h3 class="text-lg font-semibold mb-2 text-white">Content</h3>
               <div class="prose prose-sm max-w-none text-gray-200">
-                {textData.content.split('\n').map((paragraph: string) => (
+                {exerciseData.text.content.split('\n').map((paragraph: string) => (
                   <p class="mb-4">{paragraph}</p>
                 ))}
               </div>
@@ -97,11 +125,11 @@ const questionsData = questions as QuestionDTO[];
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 class="font-medium text-white">Word Count</h4>
-                <p class="text-gray-300">{textData.word_count} words</p>
+                <p class="text-gray-300">{exerciseData.text.word_count} words</p>
               </div>
               <div>
                 <h4 class="font-medium text-white">Topic</h4>
-                <p class="text-gray-300">{textData.topic}</p>
+                <p class="text-gray-300">{exerciseData.text.topic}</p>
               </div>
             </div>
 
@@ -110,11 +138,11 @@ const questionsData = questions as QuestionDTO[];
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 class="font-medium text-white">Language</h4>
-                <p class="text-gray-300">{textData.language?.name ?? 'Unknown Language'} ({textData.language?.code ?? '??'})</p>
+                <p class="text-gray-300">{exerciseData.text.language?.name ?? 'Unknown Language'} ({exerciseData.text.language?.code ?? '??'})</p>
               </div>
               <div>
                 <h4 class="font-medium text-white">Proficiency Level</h4>
-                <p class="text-gray-300">{textData.proficiency_level?.name ?? 'Unknown Level'}</p>
+                <p class="text-gray-300">{exerciseData.text.proficiency_level?.name ?? 'Unknown Level'}</p>
               </div>
             </div>
 
@@ -122,9 +150,9 @@ const questionsData = questions as QuestionDTO[];
 
             <div>
               <h3 class="text-lg font-semibold mb-4 text-white">Questions</h3>
-              {questionsData && questionsData.length > 0 ? (
+              {exerciseData.questions && exerciseData.questions.length > 0 ? (
                 <div class="space-y-4">
-                  {questionsData.map((question, index) => (
+                  {exerciseData.questions.map((question, index) => (
                     <div class="bg-white/5 rounded-lg p-4">
                       <div class="flex items-start gap-3">
                         <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-indigo-500/30 text-indigo-100 text-sm font-medium">
@@ -141,7 +169,7 @@ const questionsData = questions as QuestionDTO[];
             </div>
 
             <div class="flex justify-end mt-6">
-              <a href={`/exercises/${textId}/attempt`} class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100">
+              <a href={`/exercises/${exerciseData.text.id}/attempt`} class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100">
                 Take Exercise
               </a>
             </div>

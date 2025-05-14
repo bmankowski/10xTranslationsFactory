@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../db/supabase';
-import type { TextDTO } from '@/types';
+import type { TextWithQuestionsDTO } from '@/types';
 
 // Define schema for input validation
 const createTextSchema = z.object({
@@ -35,13 +35,14 @@ export const GET: APIRoute = async ({ request }) => {
       DEFAULT_OFFSET
     );
 
-    // Build query
+    // Build query with nested selects
     let query = supabase
       .from('texts')
       .select(`
         *,
-        language:language_id (name),
-        proficiency_level:proficiency_level_id (name)
+        language:language_id(*),
+        proficiency_level:proficiency_level_id(*),
+        questions(*)
       `, { count: 'exact' });
 
     // Apply filters if provided
@@ -128,7 +129,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Create text record in Supabase
     const textId = uuidv4();
-    const textData: TextDTO = {
+    const textData: Omit<TextWithQuestionsDTO, 'questions' | 'language' | 'proficiency_level'> = {
       id: textId,
       title: topic,
       content: sampleContent,
@@ -137,7 +138,7 @@ export const POST: APIRoute = async ({ request }) => {
       topic,
       visibility,
       word_count: wordCount,
-      user_id: user.id, // Using auth user's ID directly
+      user_id: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -145,11 +146,9 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('Attempting to create text with data:', textData);
 
     // Insert the text
-    const { data: text, error: textError } = await supabase
+    const { error: textError } = await supabase
       .from('texts')
-      .insert(textData)
-      .select()
-      .single();
+      .insert(textData);
 
     if (textError) {
       console.error('Error creating text:', textError);
@@ -210,8 +209,28 @@ export const POST: APIRoute = async ({ request }) => {
       }), { status: 500 });
     }
 
+    // Fetch the complete text with relations for response
+    const { data: completeText, error: fetchError } = await supabase
+      .from('texts')
+      .select(`
+        *,
+        language:language_id(*),
+        proficiency_level:proficiency_level_id(*),
+        questions(*)
+      `)
+      .eq('id', textId)
+      .single<TextWithQuestionsDTO>();
+
+    if (fetchError) {
+      console.error('Error fetching complete text:', fetchError);
+      return new Response(JSON.stringify({ 
+        error: 'Text created but failed to fetch complete data', 
+        details: fetchError 
+      }), { status: 500 });
+    }
+
     // Return successful response
-    return new Response(JSON.stringify({ text, questions }), { status: 201 });
+    return new Response(JSON.stringify(completeText), { status: 201 });
   } catch (error) {
     console.error('Error in POST /api/exercises:', error);
     return new Response(JSON.stringify({ 

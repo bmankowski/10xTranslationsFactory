@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { supabase } from '../../../db/supabase';
-import type { TextDTO } from '@/types';
+import type { TextWithQuestionsDTO} from '@/types';
 
 // Schema for validating textId parameter
 const textIdSchema = z.string().uuid();
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request }) => {
   try {
     // Validate textId parameter
     const textIdResult = textIdSchema.safeParse(params.textId);
@@ -36,29 +36,17 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     // Query the text with related data
-    const { data: text, error: textError } = await supabase
+    const { data: textData, error: textError } = await supabase
       .from('texts')
       .select(`
         *,
-        language:language_id (
-          id,
-          code,
-          name,
-          is_active,
-          created_at,
-          updated_at
-        ),
-        proficiency_level:proficiency_level_id (
-          id,
-          name,
-          display_order,
-          created_at,
-          updated_at
-        )
+        language:language_id(*),
+        proficiency_level:proficiency_level_id(*),
+        questions(*)
       `)
       .eq('id', textId)
       .eq('is_deleted', false)
-      .single();
+      .single<TextWithQuestionsDTO>();
 
     if (textError) {
       if (textError.code === 'PGRST116') {
@@ -77,33 +65,21 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     // Check if user has access to the text
-    if (text.visibility === 'private' && text.user_id !== user.id) {
+    if (textData.visibility === 'private' && textData.user_id !== user.id) {
       return new Response(
         JSON.stringify({ error: 'You do not have permission to access this text' }), 
         { status: 403 }
       );
     }
 
-    // Map the response to TextDTO
-    const textDTO: TextDTO = {
-      id: text.id,
-      title: text.title,
-      content: text.content,
-      language_id: text.language_id,
-      language: text.language,
-      proficiency_level_id: text.proficiency_level_id,
-      proficiency_level: text.proficiency_level,
-      topic: text.topic,
-      visibility: text.visibility,
-      word_count: text.word_count,
-      user_id: text.user_id,
-      created_at: text.created_at,
-      updated_at: text.updated_at
-    };
-
-    return new Response(JSON.stringify(textDTO), { status: 200 });
+    return new Response(JSON.stringify(textData), { 
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('Unexpected error in GET /api/exercises/[textId]:', error);
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
