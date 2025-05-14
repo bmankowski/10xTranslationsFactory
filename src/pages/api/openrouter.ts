@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import defaultOpenRouter, { createOpenRouterService, SYSTEM_PROMPTS } from '../../lib/openrouter';
-import type { ModelParams } from '../../lib/services/openRouterTypes';
+import type { ModelParams, ResponseFormat } from '../../lib/services/openRouterTypes';
 
 /**
  * OpenRouter API endpoint
@@ -12,7 +12,8 @@ import type { ModelParams } from '../../lib/services/openRouterTypes';
  *   message: string, 
  *   additionalParams?: ModelParams,
  *   systemPromptType?: string,
- *   customSystemPrompt?: string
+ *   customSystemPrompt?: string,
+ *   responseFormat?: ResponseFormat
  * }
  * Response: { text: string, language: string }
  * 
@@ -26,7 +27,8 @@ export const POST: APIRoute = async ({ request }) => {
       message, 
       additionalParams, 
       systemPromptType, 
-      customSystemPrompt 
+      customSystemPrompt,
+      responseFormat 
     } = body;
     
     if (!message || typeof message !== 'string') {
@@ -40,18 +42,67 @@ export const POST: APIRoute = async ({ request }) => {
     let openRouter = defaultOpenRouter;
     
     if (systemPromptType && SYSTEM_PROMPTS[systemPromptType as keyof typeof SYSTEM_PROMPTS]) {
-      // Use a predefined system prompt
-      openRouter = createOpenRouterService(SYSTEM_PROMPTS[systemPromptType as keyof typeof SYSTEM_PROMPTS]);
+      // Use a predefined system prompt with optional custom response format
+      openRouter = createOpenRouterService(
+        SYSTEM_PROMPTS[systemPromptType as keyof typeof SYSTEM_PROMPTS],
+        responseFormat ? { responseFormat } : {}
+      );
     } else if (customSystemPrompt && typeof customSystemPrompt === 'string') {
-      // Use a custom system prompt
-      openRouter = createOpenRouterService(customSystemPrompt);
+      // Use a custom system prompt with optional custom response format
+      openRouter = createOpenRouterService(
+        customSystemPrompt,
+        responseFormat ? { responseFormat } : {}
+      );
+    } else if (responseFormat) {
+      // Just use default prompt with custom response format
+      openRouter = createOpenRouterService(
+        SYSTEM_PROMPTS.GENERAL,
+        { responseFormat }
+      );
     }
     
-    // Send message to OpenRouter
-    const response = await openRouter.sendMessage(message, additionalParams as ModelParams);
+    // Default JSON object response format if not specified in the request params
+    const defaultResponseFormat: ResponseFormat = {
+      type: "json_schema",
+      json_schema: {
+        name: "default_response",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            text: { type: "string" },
+            language: { type: "string" }
+          },
+          required: ["text", "language"],
+          additionalProperties: false
+        }
+      }
+    };
     
-    // Parse response
-    const parsedResponse = openRouter.parseResponse(response);
+    // Add response_format to parameters if not already specified
+    const params: ModelParams = {
+      ...(additionalParams || {}),
+      response_format: responseFormat || additionalParams?.response_format || defaultResponseFormat
+    };
+    
+    console.log('Using response format:', JSON.stringify((params as any).response_format));
+    
+    // Send message to OpenRouter
+    const response = await openRouter.sendMessage(message, params);
+    
+    // For debugging, log the raw response before parsing
+    console.log('Raw OpenRouter response before parsing:', JSON.stringify(response, null, 2));
+    
+    // Check if the response is already parsed (doesn't have choices array)
+    let parsedResponse;
+    if (response && typeof response === 'object' && !('choices' in response)) {
+      // Response is already parsed (probably by the sendMessage method)
+      console.log('Response is already parsed, using as-is');
+      parsedResponse = response;
+    } else {
+      // Use the parseResponse method to process the API response
+      parsedResponse = openRouter.parseResponse(response);
+    }
     
     // Return the response
     return new Response(JSON.stringify(parsedResponse), {

@@ -89,7 +89,7 @@ Usługa powinna uwzględniać następujące scenariusze błędów:
         { "type": "json_schema", "json_schema": { "name": "chat_response", "strict": true, "schema": { "text": "string", "language": "string" } } }
         ```
    - **Nazwa modelu:**
-     1. Określić predefiniowaną nazwę modelu, np.: "openrouter-base". Jak domyślny model chciałbym korzystać z 4o-mini
+     1. Określić predefiniowaną nazwę modelu, np.: "openrouter-base". Jak domyślny model chciałbym korzystać z openai/gpt-4o-mini
    - **Parametry modelu:**
      1. Ustalić domyślne parametry, np.: `{ temperature: 0.7, max_tokens: 400, top_p: 1, frequency_penalty: 0 }`.
 

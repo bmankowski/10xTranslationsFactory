@@ -1,20 +1,65 @@
 import { useState } from 'react';
 import { SYSTEM_PROMPTS } from '../lib/openrouter';
-import type { ModelParams } from '../lib/services/openRouterTypes';
+import type { TextResponse } from '../lib/services/openRouterTypes';
+import { z } from 'zod';
 
-interface ChatResponse {
-  text: string;
-  language: string;
+// Define zod schema for the response
+const textResponseSchema = z.object({
+  text: z.string().optional(),
+  language: z.string().optional(),
+  translation: z.string().optional(),
+  translated_text: z.string().optional()
+});
+
+type SimpleTextResponse = z.infer<typeof textResponseSchema>;
+
+// Component to display simple text response
+function ResponseDisplay({ responseData }: { responseData: SimpleTextResponse | null }) {
+  console.log('ResponseDisplay received:', responseData);
+  
+  if (!responseData) {
+    return null;
+  }
+
+  try {
+    // Check for various possible response formats
+    if (responseData.text ) {
+      return (
+        <div>
+          <p>{responseData.text}</p>
+          <p className="mt-2 text-sm text-gray-600">
+            Language: {responseData.language}
+          </p>
+        </div>
+      );
+    }
+    
+    // If we got here, the response doesn't match the expected structure
+    return (
+      <div>
+        <p className="text-amber-600 mb-2">Response structure doesn't match expected format:</p>
+        <pre className="bg-gray-100 p-2 text-xs overflow-auto">
+          {JSON.stringify(responseData, null, 2)}
+        </pre>
+      </div>
+    );
+  } catch (err) {
+    console.error('Error rendering response:', err);
+    return (
+      <div className="text-red-600">
+        Error rendering response: {err instanceof Error ? err.message : 'Unknown error'}
+      </div>
+    );
+  }
 }
 
 export default function OpenRouterChat() {
   const [message, setMessage] = useState('');
-  const [response, setResponse] = useState<ChatResponse | null>(null);
+  const [response, setResponse] = useState<SimpleTextResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [promptType, setPromptType] = useState<string>('GENERAL');
-  const [customPrompt, setCustomPrompt] = useState<string>('');
-  const [useCustomPrompt, setUseCustomPrompt] = useState(false);
+  const [rawResponse, setRawResponse] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
   
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,38 +73,64 @@ export default function OpenRouterChat() {
     setError(null);
     
     try {
-      // Prepare request body
-      const requestBody: {
-        message: string;
-        additionalParams?: ModelParams;
-        systemPromptType?: string;
-        customSystemPrompt?: string;
-      } = { message };
+      console.log('Sending request:', {
+        message: message
+      });
       
-      // Add system prompt information
-      if (useCustomPrompt && customPrompt) {
-        requestBody.customSystemPrompt = customPrompt;
-      } else {
-        requestBody.systemPromptType = promptType;
-      }
+      // Create zod response format
+      const responseFormat = {
+        type: "json_schema",
+        json_schema: {
+          name: "response",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              text: { type: "string" , description: "Text"},
+            },
+            required: ["text"],
+            additionalProperties: false
+          }
+        }
+      };
       
-      // Call the API
+      // Using real OpenRouter endpoint
       const res = await fetch('/api/openrouter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          message: message,
+          additionalParams: {
+            temperature: 0.7,
+            max_tokens: 500,
+            response_format: responseFormat
+          },
+          systemPromptType: 'GENERAL',
+        }),
       });
       
       if (!res.ok) {
         const errorData = await res.json();
+        console.error('Error response:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
       }
       
       const data = await res.json();
-      setResponse(data);
+      console.log('Received data:', data);
+      
+      // Store raw response for debugging
+      setRawResponse(JSON.stringify(data, null, 2));
+      
+      // Validate the response against our schema
+      const validatedResponse = textResponseSchema.parse(data);
+      
+      // The real endpoint returns the data directly
+      console.log('Setting response:', validatedResponse);
+      setResponse(validatedResponse);
     } catch (err) {
+      console.error('Caught error:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
@@ -69,53 +140,6 @@ export default function OpenRouterChat() {
   return (
     <div className="p-4 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4">OpenRouter Chat</h2>
-      
-      <div className="mb-4">
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            id="useCustomPrompt"
-            checked={useCustomPrompt}
-            onChange={(e) => setUseCustomPrompt(e.target.checked)}
-            className="mr-2"
-          />
-          <label htmlFor="useCustomPrompt">Use custom system prompt</label>
-        </div>
-        
-        {useCustomPrompt ? (
-          <div className="mb-4">
-            <label htmlFor="customPrompt" className="block mb-1 font-medium">
-              Custom System Prompt
-            </label>
-            <textarea
-              id="customPrompt"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              className="w-full p-2 border rounded"
-              rows={3}
-              placeholder="Enter custom system prompt..."
-            />
-          </div>
-        ) : (
-          <div className="mb-4">
-            <label htmlFor="promptType" className="block mb-1 font-medium">
-              System Prompt Type
-            </label>
-            <select
-              id="promptType"
-              value={promptType}
-              onChange={(e) => setPromptType(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              {Object.keys(SYSTEM_PROMPTS).map((key) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
       
       <form onSubmit={sendMessage}>
         <div className="mb-4">
@@ -137,8 +161,20 @@ export default function OpenRouterChat() {
           disabled={loading}
           className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
         >
-          {loading ? 'Sending...' : 'Send Message'}
+          {loading ? 'Sending...' : 'Send Request'}
         </button>
+      
+        <div className="mt-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              checked={showDebug}
+              onChange={(e) => setShowDebug(e.target.checked)}
+              className="form-checkbox h-5 w-5 text-blue-600"
+            />
+            <span className="ml-2 text-gray-700">Show debug info</span>
+          </label>
+        </div>
       </form>
       
       {error && (
@@ -151,11 +187,17 @@ export default function OpenRouterChat() {
         <div className="mt-4">
           <h3 className="font-bold">Response:</h3>
           <div className="mt-2 p-3 bg-gray-100 rounded">
-            <p>{response.text}</p>
-            <p className="mt-2 text-sm text-gray-600">
-              Language: {response.language}
-            </p>
+            <ResponseDisplay responseData={response} />
           </div>
+        </div>
+      )}
+      
+      {showDebug && rawResponse && (
+        <div className="mt-4">
+          <h3 className="font-bold">Raw API Response (Debug):</h3>
+          <pre className="mt-2 p-3 bg-gray-800 text-white rounded text-xs overflow-auto">
+            {rawResponse}
+          </pre>
         </div>
       )}
     </div>
