@@ -1,9 +1,11 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import ExerciseLanguageFilter from '@/components/ExerciseLanguageFilter';
+import ExerciseCard from '@/components/ExerciseCard.astro';
 import { fetchLanguages, fetchTexts } from '@/lib/apiClient';
 import { format } from 'date-fns';
-import type { LanguageDTO, TextDTO, UserDTO } from '@/types';
+import type { LanguageDTO, TextDTO, AstroUser } from '@/types';
+import { Fragment } from 'react';
 
 // Server-side data fetching with error handling
 let languages: LanguageDTO[] = [];
@@ -21,8 +23,8 @@ try {
 // Get language_id from URL query param if it exists
 const language_id = Astro.url.searchParams.get('language_id');
 
-// Get user from Astro.locals (assuming authentication middleware sets this)
-const user = Astro.locals.user as unknown as { user_id?: string };
+// Get user from Astro.locals
+const user = Astro.locals.user;
 
 // Pagination parameters
 const limit = 10;
@@ -36,24 +38,12 @@ let error = fetchError;
 
 if (!fetchError) {
   try {
-    const textsResponse = await fetchTexts(limit, offset, language_id);
-    texts = textsResponse.texts;
-    totalItems = textsResponse.pagination.total;
+    ({ texts, pagination: { total: totalItems } } = await fetchTexts(limit, offset, language_id));
   } catch (err) {
     console.error("Failed to fetch texts:", err);
     error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
-
-// Transform data for view
-const exerciseViewModels = texts.map((text: TextDTO) => ({
-  id: text.id,
-  title: text.title,
-  displayDate: format(new Date(text.created_at), 'MMMM d, yyyy'),
-  visibility: text.visibility,
-  languageName: text.language?.name ?? 'Unknown',
-  isOwner: text.user_id === user.user_id,
-}));
 
 const totalPages = Math.ceil(totalItems / limit);
 ---
@@ -62,7 +52,12 @@ const totalPages = Math.ceil(totalItems / limit);
   <div class="relative w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
     <main class="container mx-auto py-8 px-4">
       <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">My Exercises</h1>
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">My Exercises</h1>
+          <a href="/exercise/generate" class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100 inline-block">
+            Generate New Text
+          </a>
+        </div>
         
         <!-- Language Filter (client-side component) -->
         {!error && (
@@ -86,45 +81,18 @@ const totalPages = Math.ceil(totalItems / limit);
 
         <!-- Exercise Cards List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {!error && exerciseViewModels.length === 0 ? (
+          {!error && texts.length === 0 && (
             <div class="col-span-full p-8 text-center bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-md">
               <p class="text-white mb-4">No exercises found.</p>
-              <a href="/exercise/generate" class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100 inline-block">
-                Generate New Text
-              </a>
             </div>
-          ) : (
-            exerciseViewModels.map(exercise => (
-              <div class="p-6 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-md hover:shadow-lg transition-shadow">
-                <a href={`/exercises/${exercise.id}`} class="hover:text-blue-200">
-                  <h3 class="font-medium text-lg mb-2 text-white">{exercise.title}</h3>
-                </a>
-                <div class="text-sm text-gray-200 mb-4">
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-1 bg-indigo-500/30 text-indigo-100 rounded-full text-xs">
-                      {exercise.languageName}
-                    </span>
-                    <span class="px-2 py-1 bg-purple-500/30 text-purple-100 rounded-full text-xs">
-                      {exercise.visibility === 'public' ? 'Public' : 'Private'}
-                    </span>
-                  </div>
-                  <div class="text-gray-300">Created: {exercise.displayDate}</div>
-                </div>
-                <div class="flex space-x-2">
-                  <a href={`/exercises/${exercise.id}/attempt`} class="px-3 py-1 bg-white text-indigo-900 rounded hover:bg-gray-100 text-sm">
-                    Take Exercise
-                  </a>
-                  {exercise.isOwner && (
-                    <form method="POST" action={`/api/texts/${exercise.id}`} class="inline">
-                      <input type="hidden" name="_method" value="DELETE">
-                      <button type="submit" class="px-3 py-1 bg-red-500/30 text-red-100 rounded hover:bg-red-500/40 text-sm"
-                              onclick="return confirm('Are you sure you want to delete this exercise?')">
-                        Delete
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </div>
+          )}
+          
+          {!error && (
+            texts.map((text) => (
+              <ExerciseCard 
+                text={text}
+                isOwner={text.user_id === user?.id}
+              />
             ))
           )}
         </div>

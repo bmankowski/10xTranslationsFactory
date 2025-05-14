@@ -174,4 +174,22 @@ export interface PaginatedListDTO<T> {
     offset: number;
     hasMore: boolean;
   };
+}
+
+// User types for Astro
+export interface AstroUser {
+  id: string;
+  email: string;
+  user_metadata?: {
+    full_name?: string;
+  };
+}
+
+// Extend Astro's Locals interface
+declare global {
+  namespace App {
+    interface Locals {
+      user?: AstroUser;
+    }
+  }
 } 
