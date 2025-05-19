@@ -1,20 +1,13 @@
 import { useState } from 'react';
 import { SYSTEM_PROMPTS } from '../lib/openrouter';
+import { AnswerVerificationResponseSchema, TextResponseSchema } from '../lib/services/openRouterTypes';
 import type { TextResponse } from '../lib/services/openRouterTypes';
-import { z } from 'zod';
+import { getAnswerVerificationResponseFormat, getTextResponseFormat } from '../lib/services/openRouterTypes';
 
-// Define zod schema for the response
-const textResponseSchema = z.object({
-  text: z.string().optional(),
-  language: z.string().optional(),
-  translation: z.string().optional(),
-  translated_text: z.string().optional()
-});
-
-type SimpleTextResponse = z.infer<typeof textResponseSchema>;
+// Use TextResponse type directly from openRouterTypes.ts
 
 // Component to display simple text response
-function ResponseDisplay({ responseData }: { responseData: SimpleTextResponse | null }) {
+function ResponseDisplay({ responseData }: { responseData: TextResponse | null }) {
   console.log('ResponseDisplay received:', responseData);
   
   if (!responseData) {
@@ -23,13 +16,18 @@ function ResponseDisplay({ responseData }: { responseData: SimpleTextResponse | 
 
   try {
     // Check for various possible response formats
-    if (responseData.text ) {
+    if (responseData.text) {
       return (
         <div>
           <p>{responseData.text}</p>
           <p className="mt-2 text-sm text-gray-600">
-            Language: {responseData.language}
+            Language: {responseData.language_of_response || 'Not specified'}
           </p>
+          {responseData.arithmetical_value !== undefined && responseData.arithmetical_value !== null && (
+            <p className="mt-2 text-sm text-gray-600">
+              Value: {responseData.arithmetical_value}
+            </p>
+          )}
         </div>
       );
     }
@@ -55,7 +53,7 @@ function ResponseDisplay({ responseData }: { responseData: SimpleTextResponse | 
 
 export default function OpenRouterChat() {
   const [message, setMessage] = useState('');
-  const [response, setResponse] = useState<SimpleTextResponse | null>(null);
+  const [response, setResponse] = useState<TextResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
@@ -78,22 +76,7 @@ export default function OpenRouterChat() {
       });
       
       // Create zod response format
-      const responseFormat = {
-        type: "json_schema",
-        json_schema: {
-          name: "response",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              text: { type: "string" , description: "Text"},
-            },
-            required: ["text"],
-            additionalProperties: false
-          }
-        }
-      };
-      
+      const responseFormat = getTextResponseFormat();
       // Using real OpenRouter endpoint
       const res = await fetch('/api/openrouter', {
         method: 'POST',
@@ -124,7 +107,7 @@ export default function OpenRouterChat() {
       setRawResponse(JSON.stringify(data, null, 2));
       
       // Validate the response against our schema
-      const validatedResponse = textResponseSchema.parse(data);
+      const validatedResponse = AnswerVerificationResponseSchema.parse(data);
       
       // The real endpoint returns the data directly
       console.log('Setting response:', validatedResponse);

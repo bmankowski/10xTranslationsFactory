@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import defaultOpenRouter, { createOpenRouterService, SYSTEM_PROMPTS } from '../../lib/openrouter';
 import type { ModelParams, ResponseFormat } from '../../lib/services/openRouterTypes';
-import { getTextResponseFormat } from '../../lib/services/openRouterTypes';
+import { getAnswerVerificationResponseFormat, getTextResponseFormat, getTextWithQuestionsResponseFormat } from '../../lib/services/openRouterTypes';
 
 /**
  * OpenRouter API endpoint
@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
     // Default response format if not specified in the request params
-    const defaultResponseFormat = getTextResponseFormat();
+    const defaultResponseFormat = getAnswerVerificationResponseFormat();
     
 
     console.log('Using response format:', JSON.stringify(additionalParams.response_format));

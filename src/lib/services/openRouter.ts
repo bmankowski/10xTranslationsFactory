@@ -182,7 +182,7 @@ export class OpenRouterService<T = TextResponse> {
                     // Default to TextResponseSchema if no specific schema can be determined
                     try {
                         // If TextWithQuestionsResponse - has text, language and questions array
-                        if (parsed.text && parsed.language && Array.isArray(parsed.questions)) {
+                        if (parsed.text && parsed.language_code && Array.isArray(parsed.questions)) {
                             console.log('Detected TextWithQuestionsResponse structure');
                             const validated = TextWithQuestionsResponseSchema.parse(parsed);
                             return validated as unknown as T;

@@ -64,12 +64,10 @@ export const TextResponseSchema = z.object({
 });
 
 export const TextWithQuestionsResponseSchema = z.object({
-  text: z.string(),
-  language_code: z.string(),
+  text: z.string().describe('The generated text response'),
+  language_code: z.string().describe('The language of the generated text'),
   questions: z.array(z.object({
-    question: z.string(),
-    options: z.array(z.string()).nullish(),
-    answer: z.string().nullish()
+    question: z.string().describe('The question'),
   }))
 });
 
