@@ -170,6 +170,7 @@ export class OpenRouterService<T = TextResponse> {
                 try {
                     const parsed = JSON.parse(content);
                     console.log('Successfully parsed JSON content:', parsed);
+                    
                     return parsed as T;
                 } catch (parseError) {
                     // Not valid JSON, will fall back to other handling
