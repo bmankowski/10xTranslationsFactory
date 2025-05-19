@@ -11,7 +11,14 @@ import type {
     ResponseFormat,
     TextResponse
 } from './openRouterTypes';
+import { 
+    TextWithQuestionsResponseSchema,
+    AnswerVerificationResponseSchema,
+    TextResponseSchema 
+} from './openRouterTypes';
 import { zodResponseFormat } from 'openai/helpers/zod';
+import { z } from 'zod';
+
 /**
  * OpenRouter service implementation
  */
@@ -171,7 +178,32 @@ export class OpenRouterService<T = TextResponse> {
                     const parsed = JSON.parse(content);
                     console.log('Successfully parsed JSON content:', parsed);
                     
-                    return parsed as T;
+                    // Implement dynamic schema selection based on response structure or expected type
+                    // Default to TextResponseSchema if no specific schema can be determined
+                    try {
+                        // If TextWithQuestionsResponse - has text, language and questions array
+                        if (parsed.text && parsed.language && Array.isArray(parsed.questions)) {
+                            console.log('Detected TextWithQuestionsResponse structure');
+                            const validated = TextWithQuestionsResponseSchema.parse(parsed);
+                            return validated as unknown as T;
+                        }
+                        
+                        // If AnswerVerificationResponse - has correct boolean and feedback
+                        if (typeof parsed.correct === 'boolean' && parsed.feedback) {
+                            console.log('Detected AnswerVerificationResponse structure');
+                            const validated = AnswerVerificationResponseSchema.parse(parsed);
+                            return validated as unknown as T;
+                        }
+                        
+                        // Default case - use TextResponseSchema
+                        console.log('Using default TextResponseSchema');
+                        const validated = TextResponseSchema.parse(parsed);
+                        return validated as unknown as T;
+                    } catch (zodError) {
+                        console.warn('Zod validation failed, returning parsed content:', zodError);
+                        // If validation fails, return the parsed content as is
+                        return parsed as T;
+                    }
                 } catch (parseError) {
                     // Not valid JSON, will fall back to other handling
                     console.warn('Failed to parse response as JSON:', parseError);
@@ -187,11 +219,10 @@ export class OpenRouterService<T = TextResponse> {
             // For simple TextResponse type, if content is string, convert to expected structure
             if (typeof content === 'string') {
                 console.log('Converting string content to TextResponse');
-                const textResponse = {
+                return TextResponseSchema.parse({
                     text: content,
                     language: 'en' // Default to English for plain text responses
-                };
-                return textResponse as unknown as T;
+                }) as unknown as T;
             }
 
             console.error('Unable to extract expected format:', content);

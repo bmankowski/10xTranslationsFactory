@@ -1,79 +1,92 @@
 /**
  * Type definitions for OpenRouter service
+ * Using Zod for schema validation and type generation
  */
 
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
 
-export interface OpenRouterConfig<T = any> {
-  apiKey: string;
-  apiEndpoint: string;
-  defaultModelParams?: ModelParams;
-  systemMessage?: string;
-  defaultModel?: string;
-  responseFormat?: ResponseFormat<T>;
-}
+// -------------------- Zod Schemas --------------------
 
-export interface ModelParams {
-  temperature?: number;
-  max_tokens?: number;
-  top_p?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
-  response_format?: ResponseFormat<any>;
-}
+// Message schema
+export const MessageSchema = z.object({
+  role: z.enum(['system', 'user', 'assistant']),
+  content: z.string()
+});
 
-export interface RequestPayload<T = any> {
-  messages: Message[];
-  model: string;
-  response_format?: ResponseFormat<T>;
-  temperature?: number;
-  max_tokens?: number;
-  top_p?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
-}
+// Response Format schema - using a simplified format that matches OpenRouter's expectations
+export const ResponseFormatSchema = z.object({
+  type: z.string().optional(),
+  json_schema: z.object({
+    name: z.string().optional(),
+    strict: z.boolean().optional(),
+    schema: z.record(z.any()).optional()
+  }).optional()
+}).optional();
 
-export interface Message {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
+// Model Parameters schema
+export const ModelParamsSchema = z.object({
+  temperature: z.number().min(0).max(2).optional(),
+  max_tokens: z.number().positive().optional(),
+  top_p: z.number().min(0).max(1).optional(),
+  frequency_penalty: z.number().optional(),
+  presence_penalty: z.number().optional(),
+  response_format: ResponseFormatSchema.optional()
+}).optional();
 
-export interface ResponseFormat<T = any> {
-  // type: "json_schema";
-  // json_schema: {
-  //   name: string;
-  //   strict: boolean;
-  //   schema: {
-  //     type: string;
-  //     properties: Record<string, any>;
-  //     required?: string[];
-  //     additionalProperties?: boolean;
-  //   } | Record<string, unknown>;
-  // };
-}
+// OpenRouter Configuration schema
+export const OpenRouterConfigSchema = z.object({
+  apiKey: z.string(),
+  apiEndpoint: z.string().url(),
+  defaultModelParams: ModelParamsSchema.optional(),
+  systemMessage: z.string().optional(),
+  defaultModel: z.string().optional(),
+  responseFormat: ResponseFormatSchema.optional()
+});
 
-// Simple text response
-export interface TextResponse {
-  text: string;
-}
+// Request Payload schema
+export const RequestPayloadSchema = z.object({
+  messages: z.array(MessageSchema),
+  model: z.string(),
+  response_format: ResponseFormatSchema.optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  max_tokens: z.number().positive().optional(),
+  top_p: z.number().min(0).max(1).optional(),
+  frequency_penalty: z.number().optional(),
+  presence_penalty: z.number().optional()
+});
 
-// Response for text with generated questions
-export interface TextWithQuestionsResponse {
-  text: string;
-  language: string;
-  questions: Array<{
-    question: string;
-    options?: string[];
-    answer?: string;
-  }>;
-}
+// Response schemas for different types of responses
+export const TextResponseSchema = z.object({
+  text: z.string(),
+  language_code: z.string().optional().default('en')
+});
 
-// Response for answer verification
-export interface AnswerVerificationResponse {
-  correct: boolean;
-  feedback: string;
-}
+export const TextWithQuestionsResponseSchema = z.object({
+  text: z.string(),
+  language_code: z.string(),
+  questions: z.array(z.object({
+    question: z.string(),
+    options: z.array(z.string()).optional(),
+    answer: z.string().optional()
+  }))
+});
+
+export const AnswerVerificationResponseSchema = z.object({
+  correct: z.boolean(),
+  feedback: z.string()
+});
+
+// -------------------- Generated TypeScript Types --------------------
+
+export type Message = z.infer<typeof MessageSchema>;
+export type ResponseFormat<T = any> = z.infer<typeof ResponseFormatSchema>;
+export type ModelParams = z.infer<typeof ModelParamsSchema>;
+export type OpenRouterConfig<T = any> = z.infer<typeof OpenRouterConfigSchema>;
+export type RequestPayload<T = any> = z.infer<typeof RequestPayloadSchema>;
+export type TextResponse = z.infer<typeof TextResponseSchema>;
+export type TextWithQuestionsResponse = z.infer<typeof TextWithQuestionsResponseSchema>;
+export type AnswerVerificationResponse = z.infer<typeof AnswerVerificationResponseSchema>;
 
 /**
  * Helper function to create a response format from a Zod schema

@@ -1,4 +1,6 @@
 import { OpenRouterService } from './openRouter';
+import { ResponseFormats } from './openRouterTypes';
+import type { TextResponse } from './openRouterTypes';
 import 'dotenv/config';
 
 async function testOpenRouter() {
@@ -24,22 +26,21 @@ async function testOpenRouter() {
   try {
     console.log('Sending test message to OpenRouter...');
     
-    // Override with a simpler format or set to undefined for no special format
+    // Use predefined response format from openRouterTypes
     const additionalParams = {
-      response_format: { type: 'text' } // Simplified response format
+      response_format: ResponseFormats.TEXT
     };
     
     const response = await openRouter.sendMessage(
       'Translate this to English: "Cześć, jak się masz?"', 
       additionalParams
-    );
+    ) as TextResponse;
     
     console.log('Raw response:', JSON.stringify(response, null, 2));
     
-    // For text format, we need to handle differently
-    if (response && response.choices && response.choices[0]) {
-      const content = response.choices[0].message.content;
-      console.log('Translation result:', content);
+    // Handle response according to TextResponse structure
+    if (response && response.text) {
+      console.log('Translation result:', response.text);
       console.log('\nTest completed successfully!');
     } else {
       console.error('Unexpected response format:', response);
