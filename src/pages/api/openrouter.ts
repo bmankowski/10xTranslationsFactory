@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import defaultOpenRouter, { createOpenRouterService, SYSTEM_PROMPTS } from '../../lib/openrouter';
 import type { ModelParams, ResponseFormat } from '../../lib/services/openRouterTypes';
+import { getTextResponseFormat } from '../../lib/services/openRouterTypes';
 
 /**
  * OpenRouter API endpoint
@@ -12,10 +13,9 @@ import type { ModelParams, ResponseFormat } from '../../lib/services/openRouterT
  *   message: string, 
  *   additionalParams?: ModelParams,
  *   systemPromptType?: string,
- *   customSystemPrompt?: string,
- *   responseFormat?: ResponseFormat
+ *   customSystemPrompt?: string
  * }
- * Response: { text: string, language: string }
+ * Response: { text: string, language_of_response: string }
  * 
  * Requires authenticated user (handled by middleware)
  */
@@ -27,8 +27,7 @@ export const POST: APIRoute = async ({ request }) => {
       message, 
       additionalParams, 
       systemPromptType, 
-      customSystemPrompt,
-      responseFormat 
+      customSystemPrompt
     } = body;
     
     if (!message || typeof message !== 'string') {
@@ -45,47 +44,37 @@ export const POST: APIRoute = async ({ request }) => {
       // Use a predefined system prompt with optional custom response format
       openRouter = createOpenRouterService(
         SYSTEM_PROMPTS[systemPromptType as keyof typeof SYSTEM_PROMPTS],
-        responseFormat ? { responseFormat } : {}
+        { responseFormat: additionalParams.response_format }
       );
     } else if (customSystemPrompt && typeof customSystemPrompt === 'string') {
       // Use a custom system prompt with optional custom response format
       openRouter = createOpenRouterService(
         customSystemPrompt,
-        responseFormat ? { responseFormat } : {}
+        { responseFormat: additionalParams.response_format }
       );
-    } else if (responseFormat) {
+    } else if (additionalParams.response_format) {
       // Just use default prompt with custom response format
       openRouter = createOpenRouterService(
         SYSTEM_PROMPTS.GENERAL,
-        { responseFormat }
+        { responseFormat: additionalParams.response_format }
       );
     }
+    // Default response format if not specified in the request params
+    const defaultResponseFormat = getTextResponseFormat();
     
-    // Default JSON object response format if not specified in the request params
-    const defaultResponseFormat: ResponseFormat = {
-      type: "json_schema",
-      json_schema: {
-        name: "default_response",
-        strict: true,
-        schema: {
-          type: "object",
-          properties: {
-            text: { type: "string" },
-            language: { type: "string" }
-          },
-          required: ["text", "language"],
-          additionalProperties: false
-        }
-      }
+
+    console.log('Using response format:', JSON.stringify(additionalParams.response_format));
+    console.log('Could use this response format:', JSON.stringify(getTextResponseFormat()));
+    
+    
+    
+    // Prepare parameters with response format
+    const params = {
+      ...additionalParams,
+      response_format:  defaultResponseFormat
     };
     
-    // Add response_format to parameters if not already specified
-    const params: ModelParams = {
-      ...(additionalParams || {}),
-      response_format: responseFormat || additionalParams?.response_format || defaultResponseFormat
-    };
-    
-    console.log('Using response format:', JSON.stringify((params as any).response_format));
+    console.log('Using response format:', JSON.stringify(params.response_format || defaultResponseFormat));
     
     // Send message to OpenRouter
     const response = await openRouter.sendMessage(message, params);

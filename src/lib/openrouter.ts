@@ -3,10 +3,9 @@ import type {
   OpenRouterConfig, 
   TextResponse, 
   TextWithQuestionsResponse, 
-  AnswerVerificationResponse,
-  ResponseFormat
+  AnswerVerificationResponse
 } from './services/openRouterTypes';
-import { ResponseFormats } from './services/openRouterTypes';
+import { getTextResponseFormat, getTextWithQuestionsResponseFormat, getAnswerVerificationResponseFormat } from './services/openRouterTypes';
 
 /**
  * OpenRouter service factory for the application
@@ -70,7 +69,7 @@ export function createTextOpenRouterService(
     systemPrompt,
     { 
       ...customConfig,
-      responseFormat: ResponseFormats.TEXT 
+      responseFormat: getTextResponseFormat()
     }
   );
 }
@@ -84,7 +83,7 @@ export function createTextWithQuestionsOpenRouterService(
     systemPrompt,
     { 
       ...customConfig,
-      responseFormat: ResponseFormats.TEXT_WITH_QUESTIONS 
+      responseFormat: getTextWithQuestionsResponseFormat()
     }
   );
 }
@@ -98,7 +97,7 @@ export function createAnswerVerificationOpenRouterService(
     systemPrompt,
     { 
       ...customConfig,
-      responseFormat: ResponseFormats.ANSWER_VERIFICATION 
+      responseFormat: getAnswerVerificationResponseFormat()
     }
   );
 }

@@ -58,8 +58,9 @@ export const RequestPayloadSchema = z.object({
 
 // Response schemas for different types of responses
 export const TextResponseSchema = z.object({
-  text: z.string(),
-  language_code: z.string().optional().default('en')
+  text: z.string().describe('The generated text response')  ,
+  arithmetical_value: z.number().nullish().describe('The arithmetical value of the generated text if any'),
+  language_of_response: z.string().describe('The language of the generated text').nullish()
 });
 
 export const TextWithQuestionsResponseSchema = z.object({
@@ -67,8 +68,8 @@ export const TextWithQuestionsResponseSchema = z.object({
   language_code: z.string(),
   questions: z.array(z.object({
     question: z.string(),
-    options: z.array(z.string()).optional(),
-    answer: z.string().optional()
+    options: z.array(z.string()).nullish(),
+    answer: z.string().nullish()
   }))
 });
 
@@ -98,73 +99,15 @@ export function createZodResponseFormat<T>(schema: z.ZodType<T>, name: string = 
   return zodResponseFormat(schema, name) as ResponseFormat<T>;
 }
 
-// Predefined response formats
-export const ResponseFormats = {
-  // Simple text response format
-  TEXT: {
-    type: "json_schema",
-    json_schema: {
-      name: "text_response",
-      strict: true,
-      schema: {
-        type: "object",
-        properties: {
-          text: { type: "string" }
-        },
-        required: ["text"],
-        additionalProperties: false
-      }
-    }
-  } as ResponseFormat<TextResponse>,
+// Use these functions to get response formats for OpenRouter API
+export function getTextResponseFormat() {
+  return createZodResponseFormat(TextResponseSchema, 'text_response');
+}
 
-  // Text with questions format
-  TEXT_WITH_QUESTIONS: {
-    type: "json_schema",
-    json_schema: {
-      name: "text_with_questions",
-      strict: true,
-      schema: {
-        type: "object",
-        properties: {
-          text: { type: "string" },
-          language: { type: "string" },
-          questions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                question: { type: "string" },
-                options: { 
-                  type: "array",
-                  items: { type: "string" } 
-                },
-                answer: { type: "string" }
-              },
-              required: ["question"]
-            }
-          }
-        },
-        required: ["text", "language", "questions"],
-        additionalProperties: false
-      }
-    }
-  } as ResponseFormat<TextWithQuestionsResponse>,
+export function getTextWithQuestionsResponseFormat() {
+  return createZodResponseFormat(TextWithQuestionsResponseSchema, 'text_with_questions');
+}
 
-  // Answer verification format
-  ANSWER_VERIFICATION: {
-    type: "json_schema",
-    json_schema: {
-      name: "answer_verification",
-      strict: true,
-      schema: {
-        type: "object",
-        properties: {
-          correct: { type: "boolean" },
-          feedback: { type: "string" }
-        },
-        required: ["correct", "feedback"],
-        additionalProperties: false
-      }
-    }
-  } as ResponseFormat<AnswerVerificationResponse>
-}; 
+export function getAnswerVerificationResponseFormat() {
+  return createZodResponseFormat(AnswerVerificationResponseSchema, 'answer_verification');
+} 

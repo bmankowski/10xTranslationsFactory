@@ -1,5 +1,5 @@
 import { OpenRouterService } from './openRouter';
-import { ResponseFormats } from './openRouterTypes';
+import { getTextResponseFormat } from './openRouterTypes';
 import type { TextResponse } from './openRouterTypes';
 import 'dotenv/config';
 
@@ -26,9 +26,9 @@ async function testOpenRouter() {
   try {
     console.log('Sending test message to OpenRouter...');
     
-    // Use predefined response format from openRouterTypes
+    // Use helper function for response format
     const additionalParams = {
-      response_format: ResponseFormats.TEXT
+      response_format: getTextResponseFormat()
     };
     
     const response = await openRouter.sendMessage(
