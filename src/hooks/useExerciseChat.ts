@@ -1,14 +1,8 @@
 // src/hooks/useExerciseChat.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { TextDTO, QuestionDTO, SubmitResponseCommand, UserResponseDTO } from '../types';
+import type { TextDTO, QuestionDTO, SubmitResponseCommand, UserResponseDTO, TextWithQuestionsDTO } from '../types';
 import type { ChatMessageVM, AIMessageVM, UserAnswerVM, FeedbackResultVM } from '../components/exercise-chat/viewModels';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for chat messages
-
-// Define the shape of the data expected from the assumed API endpoint
-interface ExerciseAttemptData {
-  text: TextDTO;
-  questions: QuestionDTO[];
-}
 
 export function useExerciseChat(textId: string) {
   const [textData, setTextData] = useState<TextDTO | null>(null);
@@ -64,50 +58,28 @@ export function useExerciseChat(textId: string) {
 
     const fetchExerciseData = async () => {
       try {
-        // --- API Call Placeholder ---
-        // This endpoint (`/api/exercises/${textId}/attempt-data`) is ASSUMED as per the implementation plan.
-        // It needs to be implemented in the backend to return { text: TextDTO, questions: QuestionDTO[] }.
-        console.log(`Fetching data for textId: ${textId}... (Simulating API call)`);
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000)); 
-
-        // --- Simulated API Response (replace with actual fetch call) ---
-        // const response = await fetch(`/api/exercises/${textId}/attempt-data`);
-        // if (!response.ok) {
-        //   throw new Error(`Failed to fetch exercise data: ${response.statusText}`);
-        // }
-        // const data: ExerciseAttemptData = await response.json();
+        // Fetch real data from the API
+        const response = await fetch(`/api/exercises/${textId}`);
         
-        // --- Start of Placeholder Data ---
-        // Replace this with actual data from API call
-        const placeholderText: TextDTO = {
-          id: textId,
-          title: `Sample Text for ${textId}`,
-          content: `This is the main content for the exercise. It's a sample text to be read by the user. It might contain several paragraphs and details that questions will be based on. The actual content will be fetched from the backend. This text is specifically for exercise ID ${textId}. Language and proficiency would also be part of a real TextDTO.`,
-          language_id: 'lang-en', // Placeholder
-          proficiency_level_id: 'prof-b1', // Placeholder
-          topic: 'General Knowledge',
-          visibility: 'public',
-          word_count: 50,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        const placeholderQuestions: QuestionDTO[] = [
-          { id: uuidv4(), text_id: textId, content: 'What is the main topic of the text?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: uuidv4(), text_id: textId, content: 'Can you summarize the first paragraph?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: uuidv4(), text_id: textId, content: 'What is a key detail mentioned towards the end?', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        ];
-        const data: ExerciseAttemptData = {
-            text: placeholderText,
-            questions: placeholderQuestions,
-        };
-        // --- End of Placeholder Data ---
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Exercise not found");
+          } else if (response.status === 401) {
+            throw new Error("You need to be logged in to access this exercise");
+          } else if (response.status === 403) {
+            throw new Error("You do not have permission to access this exercise");
+          } else {
+            throw new Error(`Failed to fetch exercise data: ${response.statusText}`);
+          }
+        }
+        
+        const data: TextWithQuestionsDTO = await response.json();
 
-        if (!data.text || !data.questions || data.questions.length === 0) {
-          throw new Error('Fetched data is incomplete or no questions found.');
+        if (!data || !data.questions || data.questions.length === 0) {
+          throw new Error('The exercise has no questions.');
         }
 
-        setTextData(data.text);
+        setTextData(data);
         setQuestions(data.questions);
         setCurrentQuestionIndex(0);
         startTimeCurrentQuestionRef.current = Date.now(); // Set ref value
