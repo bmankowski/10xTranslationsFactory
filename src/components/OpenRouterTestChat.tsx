@@ -51,7 +51,7 @@ function ResponseDisplay({ responseData }: { responseData: TextResponse | null }
   }
 }
 
-export default function OpenRouterChat() {
+export default function OpenRouterTestChat() {
   const [message, setMessage] = useState('');
   const [response, setResponse] = useState<TextResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -107,7 +107,7 @@ export default function OpenRouterChat() {
       setRawResponse(JSON.stringify(data, null, 2));
       
       // Validate the response against our schema
-      const validatedResponse = AnswerVerificationResponseSchema.parse(data);
+      const validatedResponse = TextResponseSchema.parse(data);
       
       // The real endpoint returns the data directly
       console.log('Setting response:', validatedResponse);
