@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../db/supabase';
 import type { TextWithQuestionsDTO } from '@/types';
+import { createTextWithQuestionsOpenRouterService } from '../../lib/openrouter';
+import { TextWithQuestionsResponseSchema } from '../../lib/services/openRouterTypes';
 
 // Define schema for input validation
 const createTextSchema = z.object({
@@ -110,12 +112,6 @@ export const POST: APIRoute = async ({ request }) => {
     
     const { language_id, proficiency_level_id, topic, visibility } = parsed.data;
 
-    // Sample content for development purposes
-    const sampleContent = `This is a sample text about ${topic}. It contains some words and sentences that can be used for language learning exercises. The content is generated automatically for testing purposes.`;
-    
-    // Calculate word count
-    const wordCount = sampleContent.split(/\s+/).filter(Boolean).length;
-
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -127,110 +123,139 @@ export const POST: APIRoute = async ({ request }) => {
       }), { status: 401 });
     }
 
-    // Create text record in Supabase
-    const textId = uuidv4();
-    const textData: Omit<TextWithQuestionsDTO, 'questions' | 'language' | 'proficiency_level'> = {
-      id: textId,
-      title: topic,
-      content: sampleContent,
-      language_id,
-      proficiency_level_id,
-      topic,
-      visibility,
-      word_count: wordCount,
-      user_id: user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    // Get language and proficiency level info for generating appropriate content
+    const { data: languageData } = await supabase
+      .from('languages')
+      .select('name, code')
+      .eq('id', language_id)
+      .single();
 
-    console.log('Attempting to create text with data:', textData);
 
-    // Insert the text
-    const { error: textError } = await supabase
-      .from('texts')
-      .insert(textData);
+    const { data: levelData } = await supabase
+      .from('proficiency_levels')
+      .select('name, description')
+      .eq('id', proficiency_level_id)
+      .single();
 
-    if (textError) {
-      console.error('Error creating text:', textError);
+    if (!languageData || !levelData) {
       return new Response(JSON.stringify({ 
-        error: 'Failed to create text', 
-        details: textError 
-      }), { status: 500 });
+        error: 'Language or proficiency level not found'
+      }), { status: 400 });
     }
 
-    // Generate questions
-    const questions = [
-      {
-        id: uuidv4(),
-        text_id: textId,
-        content: 'What is the main point of the text?',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: uuidv4(),
-        text_id: textId,
-        content: 'List one detail mentioned in the text.',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: uuidv4(),
-        text_id: textId,
-        content: 'How is the argument structured in the text?',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: uuidv4(),
-        text_id: textId,
-        content: 'What is the tone used in the text?',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
+    // Create OpenRouter service for generating text with questions
+    const openRouter = createTextWithQuestionsOpenRouterService();
 
-    // Save questions
-    const { error: questionsError } = await supabase
-      .from('questions')
-      .insert(questions);
+    // Generate text and questions using AI
+    const prompt = `Generate a language learning text about "${topic}" in ${languageData.name} (${languageData.code}) 
+    at ${levelData.name} level (${levelData.description}). 
+    The text should be educational, engaging, and appropriate for language learners at this level. 
+    Include 4-5 comprehension questions about the text that would be suitable for language practice.`;
 
-    if (questionsError) {
-      console.error('Error creating questions:', questionsError);
-      // Try to delete the text if questions creation fails
-      await supabase
+    console.log('Sending prompt to OpenRouter:', prompt);
+
+    try {
+      const response = await openRouter.sendMessage(prompt);
+      console.log('OpenRouter response:', response);
+      
+      // Validate response structure
+      const validatedResponse = TextWithQuestionsResponseSchema.parse(response);
+      
+      const generatedText = validatedResponse.text;
+      const generatedQuestions = validatedResponse.questions.map(q => q.question);
+      
+      // Calculate word count
+      const wordCount = generatedText.split(/\s+/).filter(Boolean).length;
+
+      // Create text record in Supabase
+      const textId = uuidv4();
+      const textData: Omit<TextWithQuestionsDTO, 'questions' | 'language' | 'proficiency_level'> = {
+        id: textId,
+        title: topic,
+        content: generatedText,
+        language_id,
+        proficiency_level_id,
+        topic,
+        visibility,
+        word_count: wordCount,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Attempting to create text with data:', textData);
+
+      // Insert the text
+      const { error: textError } = await supabase
         .from('texts')
-        .delete()
-        .eq('id', textId);
-        
+        .insert(textData);
+
+      if (textError) {
+        console.error('Error creating text:', textError);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to create text', 
+          details: textError 
+        }), { status: 500 });
+      }
+
+      // Generate questions from AI response
+      const questions = generatedQuestions.map(questionContent => ({
+        id: uuidv4(),
+        text_id: textId,
+        content: questionContent,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
+
+      // Save questions
+      const { error: questionsError } = await supabase
+        .from('questions')
+        .insert(questions);
+
+      if (questionsError) {
+        console.error('Error creating questions:', questionsError);
+        // Try to delete the text if questions creation fails
+        await supabase
+          .from('texts')
+          .delete()
+          .eq('id', textId);
+          
+        return new Response(JSON.stringify({ 
+          error: 'Failed to create questions', 
+          details: questionsError 
+        }), { status: 500 });
+      }
+
+      // Fetch the complete text with relations for response
+      const { data: completeText, error: fetchError } = await supabase
+        .from('texts')
+        .select(`
+          *,
+          language:language_id(*),
+          proficiency_level:proficiency_level_id(*),
+          questions(*)
+        `)
+        .eq('id', textId)
+        .single<TextWithQuestionsDTO>();
+
+      if (fetchError) {
+        console.error('Error fetching complete text:', fetchError);
+        return new Response(JSON.stringify({ 
+          error: 'Text created but failed to fetch complete data', 
+          details: fetchError 
+        }), { status: 500 });
+      }
+
+      // Return successful response
+      return new Response(JSON.stringify(completeText), { status: 201 });
+      
+    } catch (aiError) {
+      console.error('Error generating content with AI:', aiError);
       return new Response(JSON.stringify({ 
-        error: 'Failed to create questions', 
-        details: questionsError 
+        error: 'Failed to generate content', 
+        details: aiError instanceof Error ? aiError.message : 'AI generation error'
       }), { status: 500 });
     }
-
-    // Fetch the complete text with relations for response
-    const { data: completeText, error: fetchError } = await supabase
-      .from('texts')
-      .select(`
-        *,
-        language:language_id(*),
-        proficiency_level:proficiency_level_id(*),
-        questions(*)
-      `)
-      .eq('id', textId)
-      .single<TextWithQuestionsDTO>();
-
-    if (fetchError) {
-      console.error('Error fetching complete text:', fetchError);
-      return new Response(JSON.stringify({ 
-        error: 'Text created but failed to fetch complete data', 
-        details: fetchError 
-      }), { status: 500 });
-    }
-
-    // Return successful response
-    return new Response(JSON.stringify(completeText), { status: 201 });
   } catch (error) {
     console.error('Error in POST /api/exercises:', error);
     return new Response(JSON.stringify({ 

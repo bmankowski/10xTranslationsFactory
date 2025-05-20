@@ -25,6 +25,7 @@ export interface ProficiencyLevelDTO {
   id: string;
   name: string;
   display_order: number;
+  description: string;
   created_at: string;
   updated_at: string;
 }
