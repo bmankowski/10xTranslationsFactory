@@ -34,6 +34,8 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
     // setChatMessages, // Not used directly here
     // setError, // Can be used for more granular error display if needed
     isExerciseComplete,
+    // canProceedToNext, // No longer needed since we're auto-progressing
+    // proceedToNextStep, // No longer needed since we're auto-progressing
   } = useExerciseChat(textId);
 
   if (isLoadingInitialData) {
@@ -86,7 +88,6 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
         currentQuestion={currentQuestion as QuestionDTO | null}
         onAnswerSubmit={handleAnswerSubmit}
         isLoadingSubmission={isLoadingSubmission}
-        // Removed props related to NextButton
       />
 
       {isExerciseComplete && (
