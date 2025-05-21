@@ -29,6 +29,11 @@ export async function generateAIFeedback(params: FeedbackParams): Promise<{ isCo
     console.log(`Initializing OpenRouter with key length: ${apiKey.length} characters`);
     
     try {
+
+      
+
+
+
       // Initialize OpenRouter service with answer verification format
       const openRouter = new OpenRouterService<AnswerVerificationResponse>();
       

@@ -16,8 +16,7 @@ import {
     AnswerVerificationResponseSchema,
     TextResponseSchema 
 } from './openRouterTypes';
-import { zodResponseFormat } from 'openai/helpers/zod';
-import { z } from 'zod';
+
 
 /**
  * OpenRouter service implementation
