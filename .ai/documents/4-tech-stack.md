@@ -15,6 +15,14 @@ AI – Communication with models via Openrouter.ai:
 - Grants access to a wide range of models (OpenAI, Anthropic, Google, and many others), enabling us to find a solution with high efficiency and low costs.
 - Allows for setting spending limits on API keys.
 
+Testowanie – Narzędzia zapewniające jakość kodu i aplikacji:
+- Vitest i React Testing Library do testów jednostkowych
+- Playwright do testów E2E i integracyjnych
+- Postman i SuperTest do testowania API
+- Lighthouse i k6 do testów wydajnościowych
+- OWASP ZAP i SonarQube do testów bezpieczeństwa
+- GitHub Actions do automatyzacji testów w procesie CI/CD
+
 CI/CD and Hosting:
 - Github Actions for creating CI/CD pipelines.
 - DigitalOcean for hosting applications using Docker images.

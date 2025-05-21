@@ -1,7 +1,7 @@
 import { getAnswerVerificationService } from '../openrouter';
-import { resolveTemplate } from '../utils/templateUtils';
-import { PROMPT_TEMPLATES } from '../openrouter';
+import { resolveTemplate, PROMPT_TEMPLATES } from '../utils/templateUtils';
 import { supabase } from '../../db/supabase';
+import type { AnswerVerificationResponse } from './openRouterTypes';
 
 /**
  * Evaluates user's answer and provides feedback
@@ -9,7 +9,7 @@ import { supabase } from '../../db/supabase';
  * @param userAnswer The answer provided by the user
  * @returns Object with correctness assessment and feedback
  */
-export async function generateFeedback(questionId: string, userAnswer: string): Promise<{ isCorrect: boolean, feedback: string }> {
+export async function generateFeedback(questionId: string, userAnswer: string): Promise<AnswerVerificationResponse> {
   try {
     // Get question and related text from database
     const { data, error } = await supabase
@@ -60,14 +60,14 @@ For ${proficiencyLevel} level, focus on whether the student understood the text 
 
     // Return formatted result
     return {
-      isCorrect: result.correct,
+      correct: result.correct,
       feedback: result.feedback
     };
   } catch (error) {
     console.error('Error generating feedback:', error);
     // Implement fallback logic or return default response
     return {
-      isCorrect: false,
+      correct: false,
       feedback: 'Sorry, we could not evaluate your answer at this time.'
     };
   }

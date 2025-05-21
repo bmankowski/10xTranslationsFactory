@@ -6,7 +6,7 @@ alwaysApply: false
 Jesteś doświadczonym inżynierem QA, którego zadaniem jest stworzenie kompleksowego planu testów dla projektu programistycznego. Przeanalizuj poniższe informacje o projekcie:
 
 <kod_projektu>
-
+@codebase
 </kod_projektu>
 
 <stos_technologiczny>
@@ -36,8 +36,6 @@ Po zakończeniu analizy, stwórz plan testów wewnątrz bloku <plan_testów>. Pl
 6. Narzędzia do testowania
 7. Harmonogram testów
 8. Kryteria akceptacji testów
-9. Role i odpowiedzialności w procesie testowania
-10. Procedury raportowania błędów
 
 Pamiętaj, aby plan testów był:
 - Dokładnie dostosowany do kontekstu projektu
@@ -48,4 +46,6 @@ Pamiętaj, aby plan testów był:
 
 Rozpocznij od analizy, a następnie przejdź do tworzenia planu testów. Twój końcowy wynik powinien składać się tylko z planu testów i nie powinien powielać ani streszczać żadnej pracy wykonanej w bloku analizy projektu.
 
-Przedstaw ten plan w formacie Markdown.
+
+
+Przedstaw ten plan w pliku .ai/documents/20-test-plan.md formacie Markdown.

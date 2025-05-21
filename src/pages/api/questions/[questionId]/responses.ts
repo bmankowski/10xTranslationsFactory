@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // Evaluate the response and generate feedback
-    const { isCorrect, feedback } = await generateFeedback(questionId, response_text);
+    const answerVerificationResponse = await generateFeedback(questionId, response_text);
 
     // Create response record
     const responseId = uuidv4();
@@ -100,8 +100,8 @@ export const POST: APIRoute = async ({ params, request }) => {
       user_id: user.id,
       question_id: questionId,
       response_text: response_text,
-      is_correct: isCorrect,
-      feedback: feedback,
+      is_correct: answerVerificationResponse.correct,
+      feedback: answerVerificationResponse.feedback,
       response_time: response_time,
     };
 

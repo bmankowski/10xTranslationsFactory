@@ -6,6 +6,7 @@ import type {
   AnswerVerificationResponse
 } from './services/openRouterTypes';
 import { getTextResponseFormat, getTextWithQuestionsResponseFormat, getAnswerVerificationResponseFormat } from './services/openRouterTypes';
+import { PROMPT_TEMPLATES } from './utils/templateUtils';
 
 /**
  * OpenRouter service factory for the application
@@ -13,12 +14,7 @@ import { getTextResponseFormat, getTextWithQuestionsResponseFormat, getAnswerVer
  * and response formats for different use cases
  */
 
-// Define templates for dynamic system prompts
-export const PROMPT_TEMPLATES = {
-  GENERAL: 'Jestem przyjaznym asystentem, który pomaga w rozwiązywaniu problemów i odpowiada na pytania.',
-  LANGUAGE_TEACHER: 'System: Jestem nauczycielem języka ${language} (${languageCode}). Pomogę w nauce gramatyki, słownictwa, wymowy i poprawię błędy językowe dla poziomu ${proficiencyLevel}.',
-  EXERCISE_GENERATOR: 'System: Jestem generatorem ćwiczeń językowych dla języka ${language}. Tworzę różnorodne ćwiczenia dostosowane do poziomu ${proficiencyLevel} ucznia.'
-};
+
 
 // Default configuration for OpenRouter API
 const DEFAULT_CONFIG: OpenRouterConfig = {

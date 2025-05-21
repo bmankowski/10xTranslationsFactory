@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../db/supabase';
 import type { TextWithQuestionsDTO } from '@/types';
-import { createTextWithQuestionsOpenRouterService, PROMPT_TEMPLATES } from '../../lib/openrouter';
+import { createTextWithQuestionsOpenRouterService } from '../../lib/openrouter';
 import { TextWithQuestionsResponseSchema } from '../../lib/services/openRouterTypes';
+import { PROMPT_TEMPLATES } from '../../lib/utils/templateUtils';
 
 // Define schema for input validation
 const createTextSchema = z.object({
