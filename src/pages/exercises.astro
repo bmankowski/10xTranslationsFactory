@@ -27,7 +27,7 @@ const language_id = Astro.url.searchParams.get('language_id');
 const user = Astro.locals.user;
 
 // Pagination parameters
-const limit = 10;
+const limit = 6;
 const page = parseInt(Astro.url.searchParams.get('page') || '1');
 const offset = (page - 1) * limit;
 

@@ -24,7 +24,6 @@ const ChatBubbleContent: React.FC<{ message: ChatMessageVM }> = ({ message }) =>
             )}
           </p>
           {feedbackMsg.feedbackText && <p className="text-sm">{feedbackMsg.feedbackText}</p>}
-          <p className="text-xs text-gray-500 italic">Your answer: "{feedbackMsg.originalAnswerText}"</p>
         </div>
       );
     case 'loading_ai':

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ChatMessageVM } from './viewModels';
+import type { ChatMessageVM, AIMessageVM } from './viewModels';
 import type { QuestionDTO } from '../../types'; // Assuming QuestionDTO is in global types
 import ChatMessageList from './ChatMessageList';
 import ChatInputArea from './ChatInputArea';
@@ -17,12 +17,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onAnswerSubmit,
   isLoadingSubmission,
 }) => {
+  // Check if we're at completion (last message is the completion message)
+  const isCompleted = messages.length > 0 && 
+    (() => {
+      const lastMessage = messages[messages.length - 1];
+      return lastMessage.type === 'ai_question' && 
+        (lastMessage as AIMessageVM).questionId === 'completion';
+    })();
+
   return (
     <div className="flex flex-col h-full bg-white border rounded-lg shadow-lg overflow-hidden flex-grow">
       <ChatMessageList messages={messages} />
       
       {/* Show input unless it's the very end (completion message shown) */} 
-      {!(messages.length > 0 && messages[messages.length-1].type === 'ai_question' && messages[messages.length-1].questionId === 'completion') && (
+      {!isCompleted && (
         <ChatInputArea 
           onSubmit={(answerText) => {
             if (currentQuestion) {

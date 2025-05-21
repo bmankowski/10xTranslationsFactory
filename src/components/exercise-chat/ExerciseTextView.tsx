@@ -27,9 +27,6 @@ const ExerciseTextView: React.FC<ExerciseTextViewProps> = ({ text }) => {
           </p>
         ))}
       </div>
-      <div className="mt-4 pt-3 border-t text-sm text-gray-500">
-        <p>Topic: {text.topic || 'N/A'} | Word Count: {text.word_count || 'N/A'}</p>
-      </div>
     </div>
   );
 };

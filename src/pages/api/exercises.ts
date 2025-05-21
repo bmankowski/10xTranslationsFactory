@@ -15,7 +15,7 @@ const createTextSchema = z.object({
 });
 
 // Pagination defaults and limits
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 const DEFAULT_OFFSET = 0;
 
