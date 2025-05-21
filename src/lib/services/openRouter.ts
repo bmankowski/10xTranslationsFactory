@@ -33,38 +33,19 @@ export class OpenRouterService<T = TextResponse> {
      * Constructor
      * @param config Optional initial configuration
      */
-    constructor(config?: Partial<OpenRouterConfig<T>>) {
+    constructor(config: OpenRouterConfig<T>) {
         // Initialize with default config
         this._config = {
-            apiEndpoint: config?.apiEndpoint || 'https://openrouter.ai/api/v1/chat/completions',
-            apiKey: config?.apiKey || '',
+            apiEndpoint: config.apiEndpoint ,
+            apiKey: config.apiKey ,
             defaultModelParams: config?.defaultModelParams || {
                 temperature: 0.7,
                 max_tokens: 400,
                 top_p: 1,
                 frequency_penalty: 0
             },
-            systemMessage: config?.systemMessage || 'System: Wsparcie czatu za pomocą OpenRouter',
             defaultModel: config?.defaultModel || 'openai/gpt-4o-mini'
         };
-
-        // Initialize default response format if not provided in config
-        this.responseFormat = config?.responseFormat || {
-            type: "json_schema",
-            json_schema: {
-                name: "text_response",
-                strict: true,
-                schema: {
-                    type: "object",
-                    properties: {
-                        text: { type: "string" },
-                        language: { type: "string" }
-                    },
-                    required: ["text", "language"],
-                    additionalProperties: false
-                }
-            }
-        } as ResponseFormat<T>;
 
         // If config was provided with required fields, initialize automatically
         if (config?.apiKey && config?.apiEndpoint) {
@@ -76,7 +57,6 @@ export class OpenRouterService<T = TextResponse> {
     public get apiEndpoint(): string { return this._config.apiEndpoint; }
     public get apiKey(): string { return this._config.apiKey; }
     public get defaultModelParams(): ModelParams { return this._config.defaultModelParams || {}; }
-    public get systemMessage(): string { return this._config.systemMessage || ''; }
     public get defaultModel(): string { return this._config.defaultModel || 'openai/gpt-4o-mini'; }
 
     // Response format is not part of config
@@ -118,10 +98,15 @@ export class OpenRouterService<T = TextResponse> {
     /**
      * Send a message to the OpenRouter API
      * @param userMessage User message content
+     * @param systemMessage Optional system message
      * @param additionalParams Optional additional model parameters
      * @returns Promise with the API response
      */
-    public async sendMessage(userMessage: string, additionalParams?: ModelParams): Promise<T> {
+    public async sendMessage(
+        userMessage: string, 
+        systemMessage: string,
+        additionalParams?: ModelParams
+    ): Promise<T> {
         // Validate input
         if (!userMessage || userMessage.trim() === '') {
             throw new Error('User message cannot be empty');
@@ -132,8 +117,12 @@ export class OpenRouterService<T = TextResponse> {
         }
 
         try {
-            // Build the request payload
-            const payload = this._buildRequestPayload(userMessage, additionalParams);
+            // Build the request payload with the provided system message or default
+            const payload = this._buildRequestPayload(
+                userMessage, 
+                systemMessage ,
+                additionalParams
+            );
 
             // Perform API call
             const response = await this._performApiCall(payload);
@@ -255,15 +244,20 @@ export class OpenRouterService<T = TextResponse> {
     /**
      * Build a request payload
      * @param userMessage User message content
+     * @param systemMessage Optional system message
      * @param additionalParams Optional additional model parameters
      * @returns Complete request payload
      */
-    private _buildRequestPayload(userMessage: string, additionalParams?: ModelParams): RequestPayload<T> {
+    private _buildRequestPayload(
+        userMessage: string, 
+        systemMessage: string,
+        additionalParams?: ModelParams
+    ): RequestPayload<T> {
         // Create messages array with system and user messages
         const messages: Message[] = [
             {
                 role: 'system',
-                content: this.systemMessage
+                content: systemMessage
             },
             {
                 role: 'user',

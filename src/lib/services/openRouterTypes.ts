@@ -39,9 +39,8 @@ export const OpenRouterConfigSchema = z.object({
   apiKey: z.string(),
   apiEndpoint: z.string().url(),
   defaultModelParams: ModelParamsSchema.optional(),
-  systemMessage: z.string().optional(),
   defaultModel: z.string().optional(),
-  responseFormat: ResponseFormatSchema.optional()
+  responseFormat: ResponseFormatSchema
 });
 
 // Request Payload schema

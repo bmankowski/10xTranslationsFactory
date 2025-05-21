@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../db/supabase';
 import type { TextWithQuestionsDTO } from '@/types';
-import { createTextWithQuestionsOpenRouterService } from '../../lib/openrouter';
+import { createTextWithQuestionsOpenRouterService, PROMPT_TEMPLATES } from '../../lib/openrouter';
 import { TextWithQuestionsResponseSchema } from '../../lib/services/openRouterTypes';
 
 // Define schema for input validation
@@ -155,7 +155,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('Sending prompt to OpenRouter:', prompt);
 
     try {
-      const response = await openRouter.sendMessage(prompt);
+      const response = await openRouter.sendMessage(prompt, PROMPT_TEMPLATES.EXERCISE_GENERATOR);
       console.log('OpenRouter response:', response);
       
       // Validate response structure
