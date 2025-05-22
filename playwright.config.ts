@@ -12,7 +12,7 @@ if (!fs.existsSync(authDir)) {
 
 export default defineConfig({
   testDir: './test/e2e',
-  workers: 1,
+  workers: 6,
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -21,6 +21,7 @@ export default defineConfig({
 
   // Start the web server before running tests
   webServer: {
+    reuseExistingServer: true,
     command: 'npm run dev',
     url: 'http://localhost:3000',
     timeout: 120 * 1000

@@ -3,7 +3,6 @@ import { test, expect } from '../fixtures/auth-fixtures';
 // These tests use the authenticatedPage fixture that automatically logs in
 test.describe('Authenticated user actions', () => {
   test('authenticated user can access protected pages', async ({ authenticatedPage: page }) => {
-    console.log(page.url());
     // Try to access a page that should be protected
     await page.goto('/profile');
     // The main check is that we're not redirected to login

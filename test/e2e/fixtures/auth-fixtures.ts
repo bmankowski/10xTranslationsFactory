@@ -14,10 +14,6 @@ export const test = base.extend<AuthFixtures>({
     try {
       // Login before using the page via API method
       await authenticateUser(page);
-
-      // Brief wait to ensure auth is complete
-      await page.waitForTimeout(500);
-
       // Use the authenticated page
       await use(page);
     } catch (error) {

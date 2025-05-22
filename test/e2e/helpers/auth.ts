@@ -54,16 +54,10 @@ export async function login(page: Page, email: string, password: string): Promis
       'Content-Type': 'application/json'
     }
   });
-  
-  // Add a longer wait for session establishment
-  await page.waitForTimeout(1000);
-  
+ 
   // Force a full page reload to ensure cookies are applied
   await page.goto('/');
 
-  // Save storage state after successful login
-  await page.context().storageState({ path: getStorageStatePath() });
-  
   return response;
 }
 
@@ -73,8 +67,6 @@ export async function login(page: Page, email: string, password: string): Promis
 export async function authenticateUser(page: Page): Promise<void> {
   try {
     await login(page, 'bmankowski@gmail.com', 'Test123');
-    // Brief wait to ensure auth is complete
-    await page.waitForTimeout(500);
   } catch (error) {
     console.error('Authentication error:', error);
     throw error;
