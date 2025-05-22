@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { test as base } from '@playwright/test';
-import { authenticateUser } from '../helpers/auth';
+import { login } from '../helpers/auth';
+import { testUsers } from '../config/test-credentials';
 
 // Define the fixture type
 type AuthFixtures = {
@@ -13,14 +14,20 @@ export const test = base.extend<AuthFixtures>({
   authenticatedPage: async ({ page }, use) => {
     try {
       // Login before using the page via API method
-      await authenticateUser(page);
+      await login(page, testUsers.valid.email, testUsers.valid.password);
       // Use the authenticated page
       await use(page);
+      // Logout after the test is done
+      await page.request.post('/api/auth/logout');
     } catch (error) {
       console.error('Auth fixture error:', error);
-      // Still attempt to use the page even if auth failed
-      // The test will likely fail, but this gives better error messages
       await use(page);
+      // Still attempt to logout even if there was an error during login
+      try {
+        await page.request.post('/api/auth/logout');
+      } catch (logoutError) {
+        console.error('Logout error:', logoutError);
+      }
     }
   }
 });

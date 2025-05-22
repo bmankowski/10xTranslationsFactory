@@ -18,22 +18,21 @@ export async function loginViaUI(page: Page, email: string, password: string): P
 
   await page.goto('/auth/login');
   // Wait for the page to be fully loaded
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState();
   
   try {
     // Wait for the form to be visible and interactive
-    await page.waitForSelector('#email', { state: 'visible', timeout: 1000 });
+    await page.waitForSelector('#email');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
     
     // Click the submit button and wait for navigation
     await page.locator('#submit-btn').click();
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState();
+    await page.waitForTimeout(2000);
     
     expect(page.url()).not.toContain('/auth/login');
     
-    // Save storage state after successful login
-    await page.context().storageState({ path: getStorageStatePath() });
   } catch (error) {
     console.error('Error in UI login:', error);
     throw error;
@@ -59,18 +58,6 @@ export async function login(page: Page, email: string, password: string): Promis
   await page.goto('/');
 
   return response;
-}
-
-/**
- * Reusable function for tests that need an authenticated user
- */
-export async function authenticateUser(page: Page): Promise<void> {
-  try {
-    await login(page, 'bmankowski@gmail.com', 'Test123');
-  } catch (error) {
-    console.error('Authentication error:', error);
-    throw error;
-  }
 }
 
 /**
