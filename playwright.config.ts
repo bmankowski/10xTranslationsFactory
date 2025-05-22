@@ -1,30 +1,28 @@
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+
+// Ensure .auth directory exists
+const authDir = path.join(process.cwd(), '.auth');
+if (!fs.existsSync(authDir)) {
+  fs.mkdirSync(authDir, { recursive: true });
+}
+
+
 
 export default defineConfig({
   testDir: './test/e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [['html', { open: 'never' }]],
-  
+  workers: 1,
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
 
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
-
+  // Start the web server before running tests
   webServer: {
-    command: 'npm run preview',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000
   },
 }); 
