@@ -5,7 +5,7 @@ test.describe('Homepage', () => {
     await page.goto('/');
     
     // Verify the title of the page
-    await expect(page).toHaveTitle(/10x Translations Factory/);
+    await expect(page).toHaveTitle(/AI-Powered Language Learning - Learn English and Spanish/);
   });
 
   test('basic navigation', async ({ page }) => {

@@ -5,7 +5,7 @@ import { supabase } from "../db/supabase";
 const user = Astro.locals.user;
 
 // Get user's name or email to display
-const displayName = user?.user_metadata?.name || user?.email || "";
+const displayName = user?.user_metadata?.full_name || user?.email || "";
 // Get first initials for avatar fallback
 const initials = displayName
   ? displayName
@@ -27,13 +27,6 @@ const initials = displayName
           <>
             <div class="flex items-center gap-2">
               <a href="/profile" class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                  {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt={displayName} class="h-full w-full object-cover" />
-                  ) : (
-                    <span class="text-sm font-medium">{initials}</span>
-                  )}
-                </div>
                 <span class="hidden text-sm sm:inline">{displayName}</span>
               </a>
             </div>
