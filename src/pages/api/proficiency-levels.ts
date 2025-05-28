@@ -6,7 +6,6 @@ export const GET: APIRoute = async ({ cookies }) => {
   try {
     // Create server-side Supabase client
     const supabase = createServerSupabaseClient(cookies);
-    
     // Fetch proficiency levels from Supabase, ordered by display_order
     const { data, error } = await supabase.from("proficiency_levels").select("*").order("display_order");
 

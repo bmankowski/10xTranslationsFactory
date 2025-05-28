@@ -34,8 +34,7 @@ export const test = base.extend<AuthFixtures>({
 
       // Logout after the test is done
       await page.request.post("/api/auth/logout");
-    } catch (error) {
-      console.error("Authentication fixture error:", error);
+    } catch {
       // eslint-disable-next-line react-hooks/rules-of-hooks
       await use(page);
       // Still attempt to logout even if there was an error during login

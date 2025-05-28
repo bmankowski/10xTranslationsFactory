@@ -10,7 +10,8 @@ if (!fs.existsSync(authDir)) {
 
 export default defineConfig({
   testDir: "./test/e2e",
-  workers: 1,
+  workers: 6,
+  fullyParallel: true,
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

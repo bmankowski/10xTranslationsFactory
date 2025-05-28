@@ -74,8 +74,6 @@ For ${proficiencyLevel} level, focus on whether the student understood the text 
       feedback: result.feedback,
     };
   } catch (error) {
-    console.error("Error in generateFeedback:", error);
-
     // Implement fallback logic or return default response
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
 

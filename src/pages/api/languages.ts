@@ -6,7 +6,6 @@ export const GET: APIRoute = async ({ cookies }) => {
   try {
     // Create server-side Supabase client
     const supabase = createServerSupabaseClient(cookies);
-    
     // Fetch active languages from Supabase
     const { data, error } = await supabase.from("languages").select("*").eq("is_active", true).order("name");
 

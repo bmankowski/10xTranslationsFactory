@@ -20,14 +20,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (error) {
-      console.error("Login error:", error.message);
       return new Response(JSON.stringify({ error: error.message }), { status: 401 });
     }
 
     if (authData && authData.session) {
-      // Debug: Log successful authentication
-      console.log("Authentication successful for user:", authData.user.id);
-
       // Return success with user data
       return new Response(
         JSON.stringify({
@@ -41,7 +37,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(JSON.stringify({ error: "Authentication failed" }), { status: 401 });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    console.error("Login error:", errorMessage);
     return new Response(JSON.stringify({ error: "Internal server error: " + errorMessage }), { status: 500 });
   }
 };
