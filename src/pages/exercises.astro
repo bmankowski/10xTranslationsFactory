@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import ExerciseLanguageFilter from "@/components/ExerciseLanguageFilter";
-import ExerciseCard from "@/components/ExerciseCard.astro";
+import ExerciseCard from "@/components/ExerciseCard";
 import { fetchLanguages, fetchTexts } from "@/lib/apiClient";
 import type { LanguageDTO, TextDTO } from "@/types";
 
@@ -102,7 +102,7 @@ const totalPages = Math.ceil(totalItems / limit);
             )
           }
 
-          {!error && texts.map((text) => <ExerciseCard text={text} isOwner={text.user_id === user?.id} />)}
+          {!error && texts.map((text) => <ExerciseCard text={text} isOwner={text.user_id === user?.id} client:load />)}
         </div>
 
         <!-- Pagination Controls -->
