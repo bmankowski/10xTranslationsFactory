@@ -1,11 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { supabase } from "../db/supabase";
+import { createServerSupabaseClient } from "../db/supabase";
 import { PasswordChangeForm } from "../components/PasswordChangeForm";
+import type { User } from "@supabase/supabase-js";
 
 export const prerender = false;
 
-// Check authentication
+// Create server-side Supabase client
+const supabase = createServerSupabaseClient(Astro.cookies);
+
+// Check authentication using server-side client
 const { data } = await supabase.auth.getSession();
 
 // If not logged in, redirect to login

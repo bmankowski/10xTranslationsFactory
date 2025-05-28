@@ -3,11 +3,10 @@ import { login, loginViaUI } from "../helpers/auth";
 import { testUsers } from "../config/test-credentials";
 
 test.describe("Login functionality", () => {
-  test("check login via UI", async ({ page }) => {
-    await page.request.post("/api/auth/logout");
+  test("check login via UI1", async ({ page }) => {
     await loginViaUI(page, testUsers.valid.email, testUsers.valid.password);
-    expect(page.url()).not.toContain("/auth/login");
-    await page.request.post("/api/auth/logout");
+    await page.waitForTimeout(1000);
+    expect(page.url()).toContain("/exercises");
   });
 
   test("should allow a user to login with valid credentials via API", async ({ page }) => {
@@ -24,9 +23,15 @@ test.describe("Login functionality", () => {
   test("should verify incorrect credentials and do not let login", async ({ page }) => {
     // First make sure we're logged out (or try to)
     await page.request.post("/api/auth/logout");
-    const response = await login(page, testUsers.invalid.email, testUsers.invalid.password);
-    // Convert response body to string before checking includes
-    const bodyText = await response.text();
-    expect(bodyText.includes("Invalid login credentials")).toBeTruthy();
+
+    try {
+      await login(page, testUsers.invalid.email, testUsers.invalid.password);
+      // If we reach here, the login unexpectedly succeeded
+      expect(false).toBe(true); // Force test failure
+    } catch (error) {
+      // Check that the error message contains the expected text
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      expect(errorMessage).toContain("Invalid login credentials");
+    }
   });
 });

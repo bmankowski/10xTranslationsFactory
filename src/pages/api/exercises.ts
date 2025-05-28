@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
-import { supabase } from "../../db/supabase";
+import { createServerSupabaseClient } from "../../db/supabase";
 import type { TextWithQuestionsDTO } from "@/types";
 import { createTextWithQuestionsOpenRouterService } from "../../lib/openrouter";
 import { TextWithQuestionsResponseSchema } from "../../lib/services/openRouterTypes";
@@ -20,7 +20,7 @@ const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 const DEFAULT_OFFSET = 0;
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   try {
     // Get query parameters
     const url = new URL(request.url);
@@ -31,6 +31,18 @@ export const GET: APIRoute = async ({ request }) => {
     // Parse and validate pagination parameters
     const limit = Math.min(parseInt(url.searchParams.get("limit") || String(DEFAULT_LIMIT)), MAX_LIMIT);
     const offset = Math.max(parseInt(url.searchParams.get("offset") || String(DEFAULT_OFFSET)), DEFAULT_OFFSET);
+
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient(cookies);
+
+    // Try to get authenticated user (optional for GET)
+    let user = null;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      user = userData?.user;
+    } catch {
+      // Ignore auth errors for GET - allow unauthenticated access
+    }
 
     // Build query with nested selects
     let query = supabase.from("texts").select(
@@ -50,8 +62,41 @@ export const GET: APIRoute = async ({ request }) => {
     if (proficiencyLevelId) {
       query = query.eq("proficiency_level_id", proficiencyLevelId);
     }
+
+    // Handle visibility filtering
     if (visibility) {
+      if (visibility === "private" && !user) {
+        // If requesting private exercises but not authenticated, return empty result
+        return new Response(
+          JSON.stringify({
+            texts: [],
+            pagination: {
+              total: 0,
+              limit,
+              offset,
+              hasMore: false,
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
       query = query.eq("visibility", visibility);
+      if (visibility === "private" && user) {
+        // Only show user's own private exercises
+        query = query.eq("user_id", user.id);
+      }
+    } else {
+      // If no visibility filter specified, show public exercises + user's private exercises
+      if (user) {
+        query = query.or(`visibility.eq.public,and(visibility.eq.private,user_id.eq.${user.id})`);
+      } else {
+        query = query.eq("visibility", "public");
+      }
     }
 
     // Apply pagination
@@ -98,7 +143,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     // Parse and validate request body
     const body = await request.json();
@@ -112,11 +157,14 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { language_id, proficiency_level_id, topic, visibility } = parsed.data;
 
+    // Create server-side Supabase client with cookies
+    const serverSupabase = createServerSupabaseClient(cookies);
+
     // Get the authenticated user
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await serverSupabase.auth.getUser();
 
     if (authError || !user) {
       return new Response(
@@ -129,9 +177,13 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Get language and proficiency level info for generating appropriate content
-    const { data: languageData } = await supabase.from("languages").select("name, code").eq("id", language_id).single();
+    const { data: languageData } = await serverSupabase
+      .from("languages")
+      .select("name, code")
+      .eq("id", language_id)
+      .single();
 
-    const { data: levelData } = await supabase
+    const { data: levelData } = await serverSupabase
       .from("proficiency_levels")
       .select("name, description")
       .eq("id", proficiency_level_id)
@@ -184,7 +236,7 @@ export const POST: APIRoute = async ({ request }) => {
       };
 
       // Insert the text
-      const { error: textError } = await supabase.from("texts").insert(textData);
+      const { error: textError } = await serverSupabase.from("texts").insert(textData);
 
       if (textError) {
         return new Response(
@@ -206,11 +258,11 @@ export const POST: APIRoute = async ({ request }) => {
       }));
 
       // Save questions
-      const { error: questionsError } = await supabase.from("questions").insert(questions);
+      const { error: questionsError } = await serverSupabase.from("questions").insert(questions);
 
       if (questionsError) {
         // Try to delete the text if questions creation fails
-        await supabase.from("texts").delete().eq("id", textId);
+        await serverSupabase.from("texts").delete().eq("id", textId);
 
         return new Response(
           JSON.stringify({
@@ -222,7 +274,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
 
       // Fetch the complete text with relations for response
-      const { data: completeText, error: fetchError } = await supabase
+      const { data: completeText, error: fetchError } = await serverSupabase
         .from("texts")
         .select(
           `

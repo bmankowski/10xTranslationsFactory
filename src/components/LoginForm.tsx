@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 
 interface LoginFormProps {
@@ -6,6 +6,9 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,16 +22,36 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
     if (urlError) {
       setErrorMessage(decodeURIComponent(urlError));
     }
+
+    // Preserve any pre-filled values from browser autofill
+    const preserveAutofillValues = () => {
+      if (emailRef.current && emailRef.current.value) {
+        setEmail(emailRef.current.value);
+      }
+      if (passwordRef.current && passwordRef.current.value) {
+        setPassword(passwordRef.current.value);
+      }
+    };
+
+    // Check immediately and also after a short delay to catch autofill
+    preserveAutofillValues();
+    const timeoutId = setTimeout(preserveAutofillValues, 100);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Get current values from refs in case autofill happened after state was set
+    const currentEmail = emailRef.current?.value || email;
+    const currentPassword = passwordRef.current?.value || password;
+
     // Hide any previous messages
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!email || !password) {
+    if (!currentEmail || !currentPassword) {
       setErrorMessage("Please enter both email and password");
       return;
     }
@@ -41,7 +64,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: currentEmail, password: currentPassword }),
         credentials: "include", // Important: include cookies
       });
 
@@ -72,6 +95,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           Email
         </label>
         <input
+          ref={emailRef}
           type="email"
           id="email"
           name="email"
@@ -79,6 +103,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoComplete="email"
         />
       </div>
 
@@ -87,6 +112,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           Password
         </label>
         <input
+          ref={passwordRef}
           type="password"
           id="password"
           name="password"
@@ -94,6 +120,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoComplete="current-password"
         />
       </div>
 

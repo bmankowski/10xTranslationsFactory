@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { supabase } from "../../../../db/supabase";
+import { createServerSupabaseClient } from "../../../../db/supabase";
 import type { UserResponseDTO } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { generateFeedback } from "@/lib/services/feedbackService";
@@ -14,7 +14,7 @@ const submitResponseSchema = z.object({
   response_time: z.number().int().positive("Response time must be a positive integer"),
 });
 
-export const POST: APIRoute = async ({ params, request }) => {
+export const POST: APIRoute = async ({ params, request, cookies }) => {
   try {
     // Validate questionId parameter
     const questionIdResult = questionIdSchema.safeParse(params.questionId);
@@ -45,6 +45,9 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     const { response_text, response_time } = commandResult.data;
+
+    // Create server-side Supabase client with cookies
+    const supabase = createServerSupabaseClient(cookies);
 
     // Get the authenticated user
     const {
@@ -90,7 +93,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // Evaluate the response and generate feedback
-    const answerVerificationResponse = await generateFeedback(questionId, response_text);
+    const answerVerificationResponse = await generateFeedback(supabase, questionId, response_text);
 
     // Create response record
     const responseId = uuidv4();

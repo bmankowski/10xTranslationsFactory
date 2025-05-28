@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../../db/supabase";
+import { createServerSupabaseClient } from "../../../db/supabase";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const data = await request.json();
     const { currentPassword, newPassword } = data;
@@ -9,6 +9,9 @@ export const POST: APIRoute = async ({ request }) => {
     if (!currentPassword || !newPassword) {
       return new Response(JSON.stringify({ error: "Current password and new password are required" }), { status: 400 });
     }
+
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient(cookies);
 
     // Get current user session
     const { data: sessionData } = await supabase.auth.getSession();

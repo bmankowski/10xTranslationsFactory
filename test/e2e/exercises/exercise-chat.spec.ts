@@ -29,6 +29,19 @@ test.describe("Exercise Chat Flow", () => {
     // Sprawdź czy jesteśmy na stronie attempt
     await expect(page).toHaveURL(/\/exercises\/[^/]+\/attempt$/);
 
+    // Wait for the page to fully load and React components to hydrate
+    await page.waitForLoadState("networkidle");
+
+    // Check for authentication errors first
+    const errorHeading = page.locator('h3:has-text("Error Loading Exercise")');
+    if (await errorHeading.isVisible()) {
+      const errorText = await page.locator("main").textContent();
+      throw new Error(`Exercise failed to load: ${errorText}`);
+    }
+
+    // Wait for the exercise chat island with a longer timeout
+    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
+
     // Sprawdź czy pojawił się komponent czatu
     await expect(page.locator(".exercise-chat-island")).toBeVisible();
 
@@ -56,8 +69,11 @@ test.describe("Exercise Chat Flow", () => {
     const takeExerciseButton = page.locator('a:has-text("Take Exercise")');
     await takeExerciseButton.click();
 
-    // Poczekaj na załadowanie czatu
-    await page.waitForSelector(".exercise-chat-island", { timeout: 10000 });
+    // Wait for the page to fully load and React components to hydrate
+    await page.waitForLoadState("networkidle");
+
+    // Poczekaj na załadowanie czatu z dłuższym timeoutem
+    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
 
     // Znajdź pole tekstowe
     const textInput = page.locator('input[type="text"][aria-label="Answer input"]');
@@ -87,8 +103,11 @@ test.describe("Exercise Chat Flow", () => {
     const takeExerciseButton = page.locator('a:has-text("Take Exercise")');
     await takeExerciseButton.click();
 
-    // Poczekaj na załadowanie czatu
-    await page.waitForSelector(".exercise-chat-island", { timeout: 10000 });
+    // Wait for the page to fully load and React components to hydrate
+    await page.waitForLoadState("networkidle");
+
+    // Poczekaj na załadowanie czatu z dłuższym timeoutem
+    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
 
     // Sprawdź czy istnieje przycisk powrotu (może być widoczny po ukończeniu)
     const returnButton = page.locator('button:has-text("Return to Exercises")');

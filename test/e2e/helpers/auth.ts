@@ -1,5 +1,4 @@
 import type { Page, APIResponse } from "@playwright/test";
-import { expect } from "@playwright/test";
 
 /**
  * Helper function to perform login via UI
@@ -11,19 +10,25 @@ export async function loginViaUI(page: Page, email: string, password: string): P
 
   await page.goto("/auth/login");
   // Wait for the page to be fully loaded
-  await page.waitForLoadState();
+  await page.waitForLoadState("networkidle");
 
   // Wait for the form to be visible and interactive
-  await page.waitForSelector("#email");
+  await page.waitForSelector("#email", { state: "visible" });
+  await page.waitForSelector("#password", { state: "visible" });
+  await page.waitForSelector('button[type="submit"]', { state: "visible" });
+
+  // Fill the form
   await page.locator("#email").fill(email);
   await page.locator("#password").fill(password);
 
   // Click the submit button and wait for navigation
-  await page.locator("#submit-btn").click();
-  await page.waitForLoadState();
-  await page.waitForTimeout(2000);
+  await Promise.all([
+    page.waitForURL((url) => !url.href.includes("/auth/login"), { timeout: 10000 }),
+    page.locator('button[type="submit"]').click(),
+  ]);
 
-  expect(page.url()).not.toContain("/auth/login");
+  // Additional wait to ensure the page is fully loaded
+  await page.waitForLoadState("networkidle");
 }
 
 /**
@@ -41,8 +46,17 @@ export async function login(page: Page, email: string, password: string): Promis
     },
   });
 
+  // Check if login was successful
+  if (!response.ok()) {
+    const errorText = await response.text();
+    throw new Error(`Login failed: ${response.status()} - ${errorText}`);
+  }
+
   // Force a full page reload to ensure cookies are applied
   await page.goto("/");
+
+  // Wait for the page to load completely
+  await page.waitForLoadState("networkidle");
 
   return response;
 }

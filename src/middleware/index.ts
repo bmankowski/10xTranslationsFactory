@@ -1,11 +1,14 @@
 import { defineMiddleware } from "astro:middleware";
 import { isProtectedRoute } from "../lib/auth";
-import { supabase } from "@/db/supabase";
+import { createServerSupabaseClient } from "../db/supabase";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { request, redirect } = context;
+  const { request, redirect, cookies } = context;
   const url = new URL(request.url);
   const pathname = url.pathname;
+
+  // Create a server-side Supabase client with simplified cookie handling
+  const supabase = createServerSupabaseClient(cookies);
 
   // Always get session data
   const { data } = await supabase.auth.getSession();

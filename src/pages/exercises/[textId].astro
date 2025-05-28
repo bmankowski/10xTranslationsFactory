@@ -1,11 +1,18 @@
 ---
-import { supabase } from "../../db/supabase";
+import { createServerSupabaseClient } from "../../db/supabase";
 import type { TextWithQuestionsDTO } from "../../types";
+import type { User } from "@supabase/supabase-js";
 import { formatDistanceToNow } from "date-fns";
 import Layout from "../../layouts/Layout.astro";
 
 // Get text ID from params
 const { textId } = Astro.params;
+
+// Get user from Astro.locals
+const user = (Astro.locals as { user?: User }).user;
+
+// Create server-side Supabase client
+const supabase = createServerSupabaseClient(Astro.cookies);
 
 // Fetch text data with related entities and questions in a single query
 const { data: exerciseData, error: textError } = await supabase
@@ -23,6 +30,11 @@ const { data: exerciseData, error: textError } = await supabase
   .single<TextWithQuestionsDTO>();
 
 if (textError) {
+  return Astro.redirect("/404");
+}
+
+// Check if user has access to this exercise
+if (exerciseData.visibility === "private" && (!user || exerciseData.user_id !== user.id)) {
   return Astro.redirect("/404");
 }
 ---

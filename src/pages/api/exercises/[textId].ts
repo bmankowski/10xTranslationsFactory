@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { supabase } from "../../../db/supabase";
+import { createServerSupabaseClient } from "../../../db/supabase";
 import type { TextWithQuestionsDTO } from "@/types";
 
 // Schema for validating textId parameter
 const textIdSchema = z.string().uuid();
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, cookies }) => {
   try {
     // Validate textId parameter
     const textIdResult = textIdSchema.safeParse(params.textId);
@@ -21,6 +21,9 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     const textId = textIdResult.data;
+
+    // Create server-side Supabase client with cookies
+    const supabase = createServerSupabaseClient(cookies);
 
     // Get the authenticated user
     const {
@@ -88,7 +91,7 @@ export const GET: APIRoute = async ({ params }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, cookies }) => {
   try {
     // Validate textId parameter
     const textIdResult = textIdSchema.safeParse(params.textId);
@@ -103,6 +106,9 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
 
     const textId = textIdResult.data;
+
+    // Create server-side Supabase client with cookies
+    const supabase = createServerSupabaseClient(cookies);
 
     // Get the authenticated user
     const {

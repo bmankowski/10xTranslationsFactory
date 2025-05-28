@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../../db/supabase";
+import { createServerSupabaseClient } from "../../../db/supabase";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -9,6 +9,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email and password are required" }), { status: 400 });
     }
+
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient(cookies);
 
     // Register with Supabase
     const { data: authData, error } = await supabase.auth.signUp({
@@ -31,24 +34,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // If immediate session is created
-    if (authData.session) {
-      // Set auth cookies
-      cookies.set("sb-access-token", authData.session.access_token, {
-        path: "/",
-        sameSite: "lax",
-        secure: import.meta.env.PROD,
-        httpOnly: true,
-      });
-
-      cookies.set("sb-refresh-token", authData.session.refresh_token, {
-        path: "/",
-        sameSite: "lax",
-        secure: import.meta.env.PROD,
-        httpOnly: true,
-      });
-    }
-
+    // If immediate session is created, cookies are automatically handled by the server client
     // Return success with user data
     return new Response(
       JSON.stringify({

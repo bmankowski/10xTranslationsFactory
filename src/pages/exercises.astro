@@ -2,8 +2,10 @@
 import Layout from "@/layouts/Layout.astro";
 import ExerciseLanguageFilter from "@/components/ExerciseLanguageFilter";
 import ExerciseCard from "@/components/ExerciseCard";
-import { fetchLanguages, fetchTexts } from "@/lib/apiClient";
+import { fetchLanguages } from "@/lib/apiClient";
+import { createServerSupabaseClient } from "@/db/supabase";
 import type { LanguageDTO, TextDTO } from "@/types";
+import type { User } from "@supabase/supabase-js";
 
 // Server-side data fetching with error handling
 let languages: LanguageDTO[] = [];
@@ -21,24 +23,58 @@ try {
 const language_id = Astro.url.searchParams.get("language_id");
 
 // Get user from Astro.locals
-const user = Astro.locals.user;
+const user = (Astro.locals as { user?: User }).user;
 
 // Pagination parameters
 const limit = 6;
 const page = parseInt(Astro.url.searchParams.get("page") || "1");
 const offset = (page - 1) * limit;
 
-// Fetch texts based on current filters
+// Fetch texts using server-side Supabase client
 let texts: TextDTO[] = [];
 let totalItems = 0;
 let error = fetchError;
 
 if (!fetchError) {
   try {
-    ({
-      texts,
-      pagination: { total: totalItems },
-    } = await fetchTexts(limit, offset, language_id));
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient(Astro.cookies);
+
+    // Build query with nested selects
+    let query = supabase.from("texts").select(
+      `
+        *,
+        language:language_id(*),
+        proficiency_level:proficiency_level_id(*),
+        questions(*)
+      `,
+      { count: "exact" }
+    );
+
+    // Apply language filter if provided
+    if (language_id) {
+      query = query.eq("language_id", language_id);
+    }
+
+    // Show public exercises + user's private exercises if authenticated
+    if (user) {
+      query = query.or(`visibility.eq.public,and(visibility.eq.private,user_id.eq.${user.id})`);
+    } else {
+      query = query.eq("visibility", "public");
+    }
+
+    // Apply pagination and ordering
+    query = query.range(offset, offset + limit - 1).order("created_at", { ascending: false });
+
+    // Execute query
+    const { data: textsData, error: textsError, count } = await query;
+
+    if (textsError) {
+      throw new Error(`Failed to fetch texts: ${textsError.message}`);
+    }
+
+    texts = textsData || [];
+    totalItems = count || 0;
   } catch (err) {
     error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
   }

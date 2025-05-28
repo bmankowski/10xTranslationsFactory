@@ -1,16 +1,19 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import LoginForm from "../../components/LoginForm";
-import { supabase } from "../../db/supabase";
+import { createServerSupabaseClient } from "../../db/supabase";
 
 // Set to SSR mode to ensure it's always rendered on the server
 export const prerender = false;
+
+// Create server-side Supabase client with simplified cookie handling
+const supabase = createServerSupabaseClient(Astro.cookies);
 
 // Check if user is already logged in
 const { data } = await supabase.auth.getSession();
 
 // Get redirect path from URL (if any)
-const redirectTo = Astro.url.searchParams.get("redirectTo") || "/";
+const redirectTo = Astro.url.searchParams.get("redirectTo") || "/exercises";
 
 // If already logged in, redirect to the requested page or home
 if (data.session) {

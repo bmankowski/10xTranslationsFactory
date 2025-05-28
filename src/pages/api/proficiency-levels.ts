@@ -1,9 +1,12 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../db/supabase";
+import { createServerSupabaseClient } from "../../db/supabase";
 import type { ProficiencyLevelDTO } from "../../types";
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ cookies }) => {
   try {
+    // Create server-side Supabase client
+    const supabase = createServerSupabaseClient(cookies);
+    
     // Fetch proficiency levels from Supabase, ordered by display_order
     const { data, error } = await supabase.from("proficiency_levels").select("*").order("display_order");
 

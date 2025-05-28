@@ -1,20 +1,35 @@
 import { getAnswerVerificationService } from "../openrouter";
 import { resolveTemplate, PROMPT_TEMPLATES } from "../utils/templateUtils";
-import { supabase } from "../../db/supabase";
 import type { AnswerVerificationResponse } from "./openRouterTypes";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Evaluates user's answer and provides feedback
+ * @param supabaseClient The Supabase client to use for database queries
  * @param questionId The ID of the question
  * @param userAnswer The answer provided by the user
  * @returns Object with correctness assessment and feedback
  */
-export async function generateFeedback(questionId: string, userAnswer: string): Promise<AnswerVerificationResponse> {
+export async function generateFeedback(
+  supabaseClient: SupabaseClient,
+  questionId: string,
+  userAnswer: string
+): Promise<AnswerVerificationResponse> {
   try {
     // Get question and related text from database
-    const { data, error } = await supabase.from("questions").select("*, text:text_id(*)").eq("id", questionId).single();
+    const { data, error } = await supabaseClient
+      .from("questions")
+      .select("*, text:text_id(*)")
+      .eq("id", questionId)
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("Question not found");
+    }
 
     const questionContent = data.content;
     const textContent = data.text.content;
@@ -59,10 +74,14 @@ For ${proficiencyLevel} level, focus on whether the student understood the text 
       feedback: result.feedback,
     };
   } catch (error) {
+    console.error("Error in generateFeedback:", error);
+
     // Implement fallback logic or return default response
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+
     return {
       correct: false,
-      feedback: `Sorry, we could not evaluate your answer at this time. ${String(error)}`,
+      feedback: `Sorry, we could not evaluate your answer at this time. Error: ${errorMessage}`,
     };
   }
 }

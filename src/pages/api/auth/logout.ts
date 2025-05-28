@@ -1,13 +1,12 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../../db/supabase";
+import { createServerSupabaseClient } from "../../../db/supabase";
 
 export const POST: APIRoute = async ({ cookies, redirect }) => {
+  // Create server-side Supabase client with simplified cookie handling
+  const supabase = createServerSupabaseClient(cookies);
+
   // Sign out on the server
   await supabase.auth.signOut();
-
-  // Clear auth cookies
-  cookies.delete("sb-access-token", { path: "/" });
-  cookies.delete("sb-refresh-token", { path: "/" });
 
   // Redirect to home page
   return redirect("/", 302);
@@ -15,12 +14,11 @@ export const POST: APIRoute = async ({ cookies, redirect }) => {
 
 // Also support GET for direct navigation
 export const GET: APIRoute = async ({ cookies, redirect }) => {
+  // Create server-side Supabase client with simplified cookie handling
+  const supabase = createServerSupabaseClient(cookies);
+
   // Sign out on the server
   await supabase.auth.signOut();
-
-  // Clear auth cookies
-  cookies.delete("sb-access-token", { path: "/" });
-  cookies.delete("sb-refresh-token", { path: "/" });
 
   // Redirect to home page
   return redirect("/", 302);
