@@ -82,7 +82,7 @@ export interface TextDTO {
   proficiency_level_id: string;
   proficiency_level?: ProficiencyLevelDTO; // Nested proficiency level details for GET endpoints
   topic: string;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   word_count: number;
   user_id?: string; // Present in responses
   created_at: string;
@@ -94,7 +94,7 @@ export interface CreateTextCommand {
   language_id: string;
   proficiency_level_id: string;
   topic: string;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
 }
 
 // Response DTO that includes the created text and the generated questions
@@ -104,13 +104,13 @@ export interface TextWithQuestionsDTO extends TextDTO {
 
 // Command to update a text's visibility
 export interface UpdateTextVisibilityCommand {
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
 }
 
 // Response DTO for updating text visibility
 export interface UpdateTextVisibilityResponseDTO {
   id: string;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   updated_at: string;
 }
 
@@ -187,10 +187,8 @@ export interface AstroUser {
 }
 
 // Extend Astro's Locals interface
-declare global {
-  namespace App {
-    interface Locals {
-      user?: AstroUser;
-    }
+declare module "astro" {
+  interface Locals {
+    user?: AstroUser;
   }
-} 
+}

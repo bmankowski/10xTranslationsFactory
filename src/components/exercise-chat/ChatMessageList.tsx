@@ -1,6 +1,6 @@
-import React from 'react';
-import type { ChatMessageVM } from './viewModels';
-import ChatBubble from './ChatBubble';
+import React from "react";
+import type { ChatMessageVM } from "./viewModels";
+import ChatBubble from "./ChatBubble";
 
 export interface ChatMessageListProps {
   messages: ChatMessageVM[];
@@ -17,7 +17,11 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages }) => {
   }, [messages]);
 
   if (!messages || messages.length === 0) {
-    return <div className="flex-grow p-4 text-center text-gray-500">No messages yet. The first question will appear here.</div>;
+    return (
+      <div className="flex-grow p-4 text-center text-gray-500">
+        No messages yet. The first question will appear here.
+      </div>
+    );
   }
 
   return (
@@ -29,4 +33,4 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages }) => {
   );
 };
 
-export default ChatMessageList; 
+export default ChatMessageList;

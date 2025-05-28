@@ -1,17 +1,17 @@
-import type { LanguageDTO, PaginatedListDTO, TextDTO } from '@/types';
+import type { LanguageDTO, PaginatedListDTO, TextDTO } from "@/types";
 
 // Determine if we're running in a browser or on the server
-const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== "undefined";
 
 // Base URL handling for both client and server environments
 function getBaseUrl() {
   if (isBrowser) {
     // In browser, use relative URL
-    return '/api';
+    return "/api";
   } else {
     // In server (SSR), use absolute URL with environment variable or hardcoded default
     // This should match your actual API server
-    return process.env.API_BASE_URL || 'http://localhost:3000/api';
+    return process.env.API_BASE_URL || "http://localhost:3000/api";
   }
 }
 
@@ -21,12 +21,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
     // Try to parse error response, provide fallback message
     let errorData: { message?: string } = {};
     try {
-        errorData = await response.json();
+      errorData = await response.json();
     } catch (e) {
-        console.error("Failed to parse error JSON:", e);
-        errorData = { message: 'Invalid error response from server' };
+      errorData = { message: `Invalid error response from server ${String(e)}` };
     }
-    console.error("API Error:", response.status, errorData);
     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
   }
 
@@ -61,13 +59,13 @@ export async function fetchTexts(
     offset: String(offset),
   });
   if (languageId) {
-    params.append('language_id', languageId);
+    params.append("language_id", languageId);
   }
 
   const exercisesURL = `${getBaseUrl()}/exercises?${params.toString()}`;
   // Ensure fetch uses credentials to send session cookies if needed
   const response = await fetch(exercisesURL, {
-    credentials: 'include' // Important for session-based auth
+    credentials: "include", // Important for session-based auth
   });
   return handleResponse<PaginatedListDTO<TextDTO>>(response);
 }
@@ -77,12 +75,12 @@ export async function fetchTexts(
  * Requires authentication and ownership (handled by backend).
  */
 export async function deleteText(textId: string): Promise<void> {
-    const response = await fetch(`${getBaseUrl()}/exercises/${textId}`, {
-        method: 'DELETE',
-        credentials: 'include' // Important for session-based auth
-    });
+  const response = await fetch(`${getBaseUrl()}/exercises/${textId}`, {
+    method: "DELETE",
+    credentials: "include", // Important for session-based auth
+  });
 
-    // Use the helper for consistent error handling
-    // handleResponse will correctly handle 204 No Content success
-    await handleResponse<void>(response);
-} 
+  // Use the helper for consistent error handling
+  // handleResponse will correctly handle 204 No Content success
+  await handleResponse<undefined>(response);
+}

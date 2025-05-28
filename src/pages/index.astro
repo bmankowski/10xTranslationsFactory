@@ -1,28 +1,29 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Button } from "../components/ui/button";
-import { supabase } from "../db/supabase";
 
 // Get user from locals (set by middleware)
 const user = Astro.locals.user;
 const isLoggedIn = !!user;
-
 ---
 
 <Layout title="AI-Powered Language Learning - Learn English and Spanish">
-    <div class="relative w-full min-h-screen">
-      <!-- Hero Section -->
-      <section class="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 py-20">
-        <div class="container mx-auto px-4">
-          <div class="max-w-3xl mx-auto text-center text-white">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text">
-              Master Languages with AI
-            </h1>
-            <p class="text-xl text-blue-100 mb-8">
-              Personalized language learning experience for English and Spanish with instant feedback
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-              {!isLoggedIn ? (
+  <div class="relative w-full min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 py-20">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center text-white">
+          <h1
+            class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text"
+          >
+            Master Languages with AI
+          </h1>
+          <p class="text-xl text-blue-100 mb-8">
+            Personalized language learning experience for English and Spanish with instant feedback
+          </p>
+          <div class="flex flex-col sm:flex-row justify-center gap-4">
+            {
+              !isLoggedIn ? (
                 <>
                   <a href="/auth/login">
                     <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700" client:load>
@@ -30,81 +31,100 @@ const isLoggedIn = !!user;
                     </Button>
                   </a>
                   <a href="/auth/register">
-                    <Button size="lg" className="w-full sm:w-auto text-white border-white hover:bg-white/10" client:load>
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto text-white border-white hover:bg-white/10"
+                      client:load
+                    >
                       Create Account
                     </Button>
                   </a>
                 </>
               ) : (
-
                 <a href="/exercises">
                   <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700" client:load>
                     Go to exercises
                   </Button>
                 </a>
-              )}
-            </div>
+              )
+            }
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Features Section -->
-      <section class="py-16 bg-gray-50">
-        <div class="container mx-auto px-4">
-          <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4">1</div>
-              <h3 class="text-xl font-semibold mb-2">Choose Your Topic</h3>
-              <p class="text-gray-600">Select a topic of interest and your proficiency level in English or Spanish.</p>
+    <!-- Features Section -->
+    <section class="py-16 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <div
+              class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4"
+            >
+              1
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4">2</div>
-              <h3 class="text-xl font-semibold mb-2">Practice with AI</h3>
-              <p class="text-gray-600">Answer questions based on AI-generated texts tailored to your level.</p>
+            <h3 class="text-xl font-semibold mb-2">Choose Your Topic</h3>
+            <p class="text-gray-600">Select a topic of interest and your proficiency level in English or Spanish.</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <div
+              class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4"
+            >
+              2
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4">3</div>
-              <h3 class="text-xl font-semibold mb-2">Get Instant Feedback</h3>
-              <p class="text-gray-600">Receive immediate, actionable feedback to improve your language skills.</p>
+            <h3 class="text-xl font-semibold mb-2">Practice with AI</h3>
+            <p class="text-gray-600">Answer questions based on AI-generated texts tailored to your level.</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <div
+              class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl font-bold mb-4"
+            >
+              3
             </div>
+            <h3 class="text-xl font-semibold mb-2">Get Instant Feedback</h3>
+            <p class="text-gray-600">Receive immediate, actionable feedback to improve your language skills.</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Languages Section -->
-      <section class="py-16 bg-white">
-        <div class="container mx-auto px-4 text-center">
-          <h2 class="text-3xl font-bold mb-12">Supported Languages</h2>
-          <div class="flex flex-col md:flex-row justify-center gap-8 max-w-2xl mx-auto">
-            <div class="flex-1 p-6 border rounded-lg">
-              <h3 class="text-2xl font-semibold mb-4">English</h3>
-              <p class="text-gray-600 mb-4">Learn and practice English with texts generated on topics you choose.</p>
-              <div class="flex gap-2 justify-center">
-                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Beginner</span>
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Intermediate</span>
-                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Advanced</span>
-              </div>
+    <!-- Languages Section -->
+    <section class="py-16 bg-white">
+      <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-12">Supported Languages</h2>
+        <div class="flex flex-col md:flex-row justify-center gap-8 max-w-2xl mx-auto">
+          <div class="flex-1 p-6 border rounded-lg">
+            <h3 class="text-2xl font-semibold mb-4">English</h3>
+            <p class="text-gray-600 mb-4">Learn and practice English with texts generated on topics you choose.</p>
+            <div class="flex gap-2 justify-center">
+              <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Beginner</span>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Intermediate</span>
+              <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Advanced</span>
             </div>
-            <div class="flex-1 p-6 border rounded-lg">
-              <h3 class="text-2xl font-semibold mb-4">Spanish</h3>
-              <p class="text-gray-600 mb-4">Learn and practice Spanish with texts generated on topics you choose.</p>
-              <div class="flex gap-2 justify-center">
-                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Beginner</span>
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Intermediate</span>
-                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Advanced</span>
-              </div>
+          </div>
+          <div class="flex-1 p-6 border rounded-lg">
+            <h3 class="text-2xl font-semibold mb-4">Spanish</h3>
+            <p class="text-gray-600 mb-4">Learn and practice Spanish with texts generated on topics you choose.</p>
+            <div class="flex gap-2 justify-center">
+              <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Beginner</span>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Intermediate</span>
+              <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Advanced</span>
             </div>
           </div>
         </div>
-      </section>
-      
-      <!-- CTA Section -->
-      <section class="py-16 bg-gradient-to-r from-indigo-900 to-purple-900 text-white">
-        <div class="container mx-auto px-4 text-center">
-          <h2 class="text-3xl font-bold mb-6">Start Learning Today</h2>
-          <p class="text-xl mb-8 max-w-2xl mx-auto">Join our community of language learners and improve your English or Spanish with personalized AI assistance.</p>
-          {!isLoggedIn ? (
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-indigo-900 to-purple-900 text-white">
+      <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-6">Start Learning Today</h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto">
+          Join our community of language learners and improve your English or Spanish with personalized AI assistance.
+        </p>
+        {
+          !isLoggedIn ? (
             <a href="/auth/register">
               <Button size="lg" className="bg-white text-indigo-900 hover:bg-gray-100" client:load>
                 Create Free Account
@@ -116,8 +136,9 @@ const isLoggedIn = !!user;
                 Generate New Exercise
               </Button>
             </a>
-          )}
-        </div>
-      </section>
-    </div>
+          )
+        }
+      </div>
+    </section>
+  </div>
 </Layout>

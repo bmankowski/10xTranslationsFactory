@@ -1,12 +1,15 @@
-import { OpenRouterService } from './services/openRouter';
-import type { 
-  OpenRouterConfig, 
-  TextResponse, 
-  TextWithQuestionsResponse, 
-  AnswerVerificationResponse
-} from './services/openRouterTypes';
-import { getTextResponseFormat, getTextWithQuestionsResponseFormat, getAnswerVerificationResponseFormat } from './services/openRouterTypes';
-import { PROMPT_TEMPLATES } from './utils/templateUtils';
+import { OpenRouterService } from "./services/openRouter";
+import type {
+  OpenRouterConfig,
+  TextResponse,
+  TextWithQuestionsResponse,
+  AnswerVerificationResponse,
+} from "./services/openRouterTypes";
+import {
+  getTextResponseFormat,
+  getTextWithQuestionsResponseFormat,
+  getAnswerVerificationResponseFormat,
+} from "./services/openRouterTypes";
 
 /**
  * OpenRouter service factory for the application
@@ -14,15 +17,12 @@ import { PROMPT_TEMPLATES } from './utils/templateUtils';
  * and response formats for different use cases
  */
 
-
-
 // Default configuration for OpenRouter API
 const DEFAULT_CONFIG: OpenRouterConfig = {
-  apiEndpoint: import.meta.env.OPENROUTER_API_ENDPOINT ,
-  apiKey: import.meta.env.OPENROUTER_API_KEY ,
-  defaultModel: 'openai/gpt-4o-mini'
+  apiEndpoint: import.meta.env.OPENROUTER_API_ENDPOINT,
+  apiKey: import.meta.env.OPENROUTER_API_KEY,
+  defaultModel: "openai/gpt-4o-mini",
 };
-
 
 // Export type-specific instances when needed
 export function getAnswerVerificationService(): OpenRouterService<AnswerVerificationResponse> {
@@ -32,31 +32,25 @@ export function getAnswerVerificationService(): OpenRouterService<AnswerVerifica
 }
 
 // Create an OpenRouter service for simple text responses
-export function createTextOpenRouterService(
-  customConfig: Partial<OpenRouterConfig<TextResponse>> = {}
-): OpenRouterService<TextResponse> {
+export function createTextOpenRouterService(): OpenRouterService<TextResponse> {
   return new OpenRouterService<TextResponse>({
     ...DEFAULT_CONFIG,
-    responseFormat: getTextResponseFormat()
+    responseFormat: getTextResponseFormat(),
   });
 }
 
 // Create an OpenRouter service for text with questions generation
-export function createTextWithQuestionsOpenRouterService(
-  systemPrompt: string = PROMPT_TEMPLATES.EXERCISE_GENERATOR,
-): OpenRouterService<TextWithQuestionsResponse> {
+export function createTextWithQuestionsOpenRouterService(): OpenRouterService<TextWithQuestionsResponse> {
   return new OpenRouterService<TextWithQuestionsResponse>({
     ...DEFAULT_CONFIG,
-    responseFormat: getTextWithQuestionsResponseFormat()
+    responseFormat: getTextWithQuestionsResponseFormat(),
   });
 }
 
 // Create an OpenRouter service for answer verification
-export function createAnswerVerificationOpenRouterService(
-  systemPrompt: string = PROMPT_TEMPLATES.LANGUAGE_TEACHER,
-): OpenRouterService<AnswerVerificationResponse> {
+export function createAnswerVerificationOpenRouterService(): OpenRouterService<AnswerVerificationResponse> {
   return new OpenRouterService<AnswerVerificationResponse>({
     ...DEFAULT_CONFIG,
-    responseFormat: getAnswerVerificationResponseFormat()
+    responseFormat: getAnswerVerificationResponseFormat(),
   });
-} 
+}

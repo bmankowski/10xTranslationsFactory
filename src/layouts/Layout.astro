@@ -32,14 +32,15 @@ const user = session?.user;
       <slot />
     </main>
     <Toaster client:load />
-    
+
     <!-- Expose auth data to client-side JavaScript if needed -->
-    {user && (
-      <script define:vars={{ userId: user.id, userEmail: user.email }}>
-        // Make auth data available to client components that need it
-        window.userInfo = { userId, userEmail };
-      </script>
-    )}
+    {
+      user && (
+        <script define:vars={{ userId: user.id, userEmail: user.email }}>
+          window.userInfo = { userId, userEmail };
+        </script>
+      )
+    }
   </body>
 </html>
 

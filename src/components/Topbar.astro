@@ -1,20 +1,9 @@
 ---
-import { supabase } from "../db/supabase";
-
 // Get user from locals (set by middleware)
 const user = Astro.locals.user;
 
 // Get user's name or email to display
 const displayName = user?.user_metadata?.full_name || user?.email || "";
-// Get first initials for avatar fallback
-const initials = displayName
-  ? displayName
-      .split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2)
-  : "?";
 ---
 
 <header class="border-b border-gray-200 bg-white py-3">
@@ -52,4 +41,3 @@ const initials = displayName
     </div>
   </div>
 </header>
-

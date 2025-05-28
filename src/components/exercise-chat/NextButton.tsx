@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button'; // Assuming Shadcn UI button path
-import { ArrowRight, CheckCheck } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button"; // Assuming Shadcn UI button path
+import { ArrowRight, CheckCheck } from "lucide-react";
 
 export interface NextButtonProps {
   onClick: () => void;
@@ -11,12 +11,7 @@ export interface NextButtonProps {
 const NextButton: React.FC<NextButtonProps> = ({ onClick, isDisabled, isLastQuestionAnswered }) => {
   return (
     <div className="p-4 text-center">
-      <Button 
-        onClick={onClick} 
-        disabled={isDisabled}
-        variant="outline"
-        className="min-w-[180px]"
-      >
+      <Button onClick={onClick} disabled={isDisabled} variant="outline" className="min-w-[180px]">
         {isLastQuestionAnswered ? (
           <>
             <CheckCheck className="w-4 h-4 mr-1.5" />
@@ -33,4 +28,4 @@ const NextButton: React.FC<NextButtonProps> = ({ onClick, isDisabled, isLastQues
   );
 };
 
-export default NextButton; 
+export default NextButton;

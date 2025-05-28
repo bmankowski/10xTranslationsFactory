@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button'; // Assuming Shadcn UI button path
-import { Input } from '@/components/ui/input';   // Assuming Shadcn UI input path
-import { SendHorizonal, Loader2 } from 'lucide-react';
-import type { QuestionDTO } from '../../types'; // Import QuestionDTO
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button"; // Assuming Shadcn UI button path
+import { Input } from "@/components/ui/input"; // Assuming Shadcn UI input path
+import { SendHorizonal, Loader2 } from "lucide-react";
+import type { QuestionDTO } from "../../types"; // Import QuestionDTO
 
 export interface ChatInputAreaProps {
   onSubmit: (answerText: string) => void;
@@ -11,14 +11,14 @@ export interface ChatInputAreaProps {
 }
 
 const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, currentQuestion }) => {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null); // Ref for the input element
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (inputText.trim() && !isLoading && currentQuestion) {
       onSubmit(inputText.trim());
-      setInputText(''); // Clear input after submission
+      setInputText(""); // Clear input after submission
     }
   };
 
@@ -31,7 +31,7 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, curr
     }
     // Clear input when currentQuestion becomes null (e.g. end of exercise before completion message)
     if (!currentQuestion) {
-        setInputText('');
+      setInputText("");
     }
   }, [currentQuestion, isLoading]); // Depend on currentQuestion and isLoading
 
@@ -52,7 +52,7 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, curr
         />
         <Button type="submit" disabled={isDisabled || !inputText.trim()}>
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> 
+            <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
           ) : (
             <SendHorizonal className="w-4 h-4 mr-1.5" />
           )}
@@ -66,4 +66,4 @@ const ChatInputArea: React.FC<ChatInputAreaProps> = ({ onSubmit, isLoading, curr
   );
 };
 
-export default ChatInputArea; 
+export default ChatInputArea;

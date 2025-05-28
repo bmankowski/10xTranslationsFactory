@@ -1,11 +1,11 @@
-import React from 'react';
-import { useExerciseChat } from '../../hooks/useExerciseChat';
-import type { QuestionDTO } from '../../types'; // Ensure QuestionDTO is imported if not already global
+import React from "react";
+import { useExerciseChat } from "../../hooks/useExerciseChat";
+import type { QuestionDTO } from "../../types"; // Ensure QuestionDTO is imported if not already global
 
-import ExerciseTextView from './ExerciseTextView';
-import ChatInterface from './ChatInterface';
-import { Loader2, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import ExerciseTextView from "./ExerciseTextView";
+import ChatInterface from "./ChatInterface";
+import { Loader2, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Placeholder for ViewModel types - will be defined in a later step
 // import type { ChatMessageVM } from './viewModels';
@@ -39,7 +39,8 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
     );
   }
 
-  if (error && !textData) { // Show critical error if initial data load failed
+  if (error && !textData) {
+    // Show critical error if initial data load failed
     return (
       <div className="p-8 my-4 border rounded-md bg-red-50 text-red-700 text-center">
         <h3 className="font-semibold text-lg mb-2">Error Loading Exercise</h3>
@@ -49,16 +50,23 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
     );
   }
 
-  if (!textData) { // Should be covered by isLoading or error, but as a fallback
+  if (!textData) {
+    // Should be covered by isLoading or error, but as a fallback
     return <div className="text-center p-8">Exercise data is not available.</div>;
   }
 
   const lastMessage = chatMessages.length > 0 ? chatMessages[chatMessages.length - 1] : null;
   // Logic for isLastQuestionAnsweredAndFeedbackShown and isNextButtonActuallyDisabled removed as button is gone.
-  const submissionError = error && (isLoadingSubmission || (lastMessage?.type === 'user_answer' && !chatMessages.some(m => m.type === 'feedback_result' && m.questionId === lastMessage.questionId))) ? error : null;
+  const submissionError =
+    error &&
+    (isLoadingSubmission ||
+      (lastMessage?.type === "user_answer" &&
+        !chatMessages.some((m) => m.type === "feedback_result" && m.questionId === lastMessage.questionId)))
+      ? error
+      : null;
 
   const handleReturnToExercises = () => {
-    window.location.href = '/exercises'; // Navigate to exercises list
+    window.location.href = "/exercises"; // Navigate to exercises list
   };
 
   return (
@@ -71,7 +79,9 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
 
       {submissionError && (
         <div className="p-3 my-3 border rounded-md bg-red-50 text-red-600 text-sm">
-          <p><span className="font-semibold">Submission Error:</span> {submissionError}</p>
+          <p>
+            <span className="font-semibold">Submission Error:</span> {submissionError}
+          </p>
         </div>
       )}
 
@@ -94,4 +104,4 @@ const ExerciseChatIsland: React.FC<ExerciseChatIslandProps> = ({ textId }) => {
   );
 };
 
-export default ExerciseChatIsland; 
+export default ExerciseChatIsland;

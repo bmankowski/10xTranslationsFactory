@@ -10,15 +10,12 @@ export const prerender = false;
 const { data } = await supabase.auth.getSession();
 
 // Get redirect path from URL (if any)
-const redirectTo = Astro.url.searchParams.get('redirectTo') || '/';
+const redirectTo = Astro.url.searchParams.get("redirectTo") || "/";
 
 // If already logged in, redirect to the requested page or home
 if (data.session) {
   return Astro.redirect(redirectTo);
 }
-
-// Get any error from previous login attempts
-const error = Astro.url.searchParams.get('error');
 ---
 
 <Layout title="Login - 10x Translations Factory">
@@ -40,11 +37,9 @@ const error = Astro.url.searchParams.get('error');
             class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1"> Password </label>
           <input
             type="password"
             id="password"
@@ -53,20 +48,18 @@ const error = Astro.url.searchParams.get('error');
             class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div id="error-message" class="text-red-500 text-sm hidden"></div>
         <div id="success-message" class="text-green-500 text-sm hidden"></div>
-        
+
         <Button type="submit" id="submit-btn" className="w-full">Sign In</Button>
-        
+
         <div class="text-center text-sm mt-4">
           <p>
             Don't have an account?
             <a href="/auth/register" class="text-blue-600 hover:underline">Register</a>
           </p>
-          <a href="/auth/forgot-password" class="text-blue-600 hover:underline block mt-2">
-            Forgot your password?
-          </a>
+          <a href="/auth/forgot-password" class="text-blue-600 hover:underline block mt-2"> Forgot your password? </a>
         </div>
       </form>
     </div>
@@ -74,100 +67,97 @@ const error = Astro.url.searchParams.get('error');
 </Layout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('login-form') as HTMLFormElement;
-    const errorMsg = document.getElementById('error-message') as HTMLDivElement;
-    const successMsg = document.getElementById('success-message') as HTMLDivElement;
-    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-    
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("login-form") as HTMLFormElement;
+    const errorMsg = document.getElementById("error-message") as HTMLDivElement;
+    const successMsg = document.getElementById("success-message") as HTMLDivElement;
+    const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
     // Check for URL error param and display if present
     const urlParams = new URLSearchParams(window.location.search);
-    const urlError = urlParams.get('error');
+    const urlError = urlParams.get("error");
     if (urlError && errorMsg) {
       errorMsg.textContent = decodeURIComponent(urlError);
-      errorMsg.classList.remove('hidden');
+      errorMsg.classList.remove("hidden");
     }
-    
+
     if (form && errorMsg && submitBtn) {
       // Get redirect path from data attribute
-      const redirectTo = form.dataset.redirectTo || '/';
-      
-      form.addEventListener('submit', async (e) => {
+      const redirectTo = form.dataset.redirectTo || "/";
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        
+
         // Hide any previous messages
-        errorMsg.classList.add('hidden');
-        if (successMsg) successMsg.classList.add('hidden');
-        
+        errorMsg.classList.add("hidden");
+        if (successMsg) successMsg.classList.add("hidden");
+
         // Disable button and show loading state
         submitBtn.disabled = true;
-        submitBtn.innerText = 'Signing in...';
-        
-        const emailInput = document.getElementById('email') as HTMLInputElement;
-        const passwordInput = document.getElementById('password') as HTMLInputElement;
-        
+        submitBtn.innerText = "Signing in...";
+
+        const emailInput = document.getElementById("email") as HTMLInputElement;
+        const passwordInput = document.getElementById("password") as HTMLInputElement;
+
         if (!emailInput || !passwordInput) {
-          errorMsg.textContent = 'Form inputs not found';
-          errorMsg.classList.remove('hidden');
+          errorMsg.textContent = "Form inputs not found";
+          errorMsg.classList.remove("hidden");
           submitBtn.disabled = false;
-          submitBtn.innerText = 'Sign In';
+          submitBtn.innerText = "Sign In";
           return;
         }
-        
+
         const email = emailInput.value.trim();
         const password = passwordInput.value;
-        
+
         if (!email || !password) {
-          errorMsg.textContent = 'Please enter both email and password';
-          errorMsg.classList.remove('hidden');
+          errorMsg.textContent = "Please enter both email and password";
+          errorMsg.classList.remove("hidden");
           submitBtn.disabled = false;
-          submitBtn.innerText = 'Sign In';
+          submitBtn.innerText = "Sign In";
           return;
         }
-        
+
         try {
-          console.log('Attempting login for:', email);
-          
-          const response = await fetch('/api/auth/login', {
-            method: 'POST',
+
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ email, password }),
-            credentials: 'include' // Important: include cookies
+            credentials: "include", // Important: include cookies
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
             // Show error message
-            errorMsg.textContent = data.error || 'Failed to sign in';
-            errorMsg.classList.remove('hidden');
+            errorMsg.textContent = data.error || "Failed to sign in";
+            errorMsg.classList.remove("hidden");
             submitBtn.disabled = false;
-            submitBtn.innerText = 'Sign In';
+            submitBtn.innerText = "Sign In";
             return;
           }
-          
-          console.log('Login successful, redirecting to:', redirectTo);
-          
+
+
           if (successMsg) {
-            successMsg.textContent = 'Login successful! Redirecting...';
-            successMsg.classList.remove('hidden');
+            successMsg.textContent = "Login successful! Redirecting...";
+            successMsg.classList.remove("hidden");
           }
-          
+
           // Redirect after a short delay to allow the user to see the success message
           setTimeout(() => {
             // Reload the page to get a fresh session
             window.location.href = redirectTo;
           }, 500);
         } catch (err) {
-          console.error('Login error:', err);
-          errorMsg.textContent = 'An unexpected error occurred';
-          errorMsg.classList.remove('hidden');
+          errorMsg.textContent = "An unexpected error occurred";
+          errorMsg.classList.remove("hidden");
           submitBtn.disabled = false;
-          submitBtn.innerText = 'Sign In';
+          submitBtn.innerText = "Sign In";
         }
       });
     }
   });
-</script> 
+</script>

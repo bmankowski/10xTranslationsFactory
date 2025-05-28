@@ -62,5 +62,13 @@ export default tseslint.config(
   jsxA11yConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
-  eslintPluginPrettier
+  eslintPluginPrettier,
+  // Override for Astro files to disable prettier conflicts
+  {
+    files: ["**/*.astro"],
+    rules: {
+      "prettier/prettier": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+    },
+  }
 );

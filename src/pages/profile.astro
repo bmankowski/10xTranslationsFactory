@@ -10,7 +10,7 @@ const { data } = await supabase.auth.getSession();
 
 // If not logged in, redirect to login
 if (!data.session) {
-  return Astro.redirect('/auth/login?redirectTo=/profile');
+  return Astro.redirect("/auth/login?redirectTo=/profile");
 }
 
 // Get user details
@@ -53,7 +53,7 @@ const user = data.session.user;
             </li>
             <li class="flex items-center space-x-3">
               <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">Last Sign In</span>
-              <span class="text-blue-100/90">{new Date(user.last_sign_in_at || '').toLocaleString()}</span>
+              <span class="text-blue-100/90">{new Date(user.last_sign_in_at || "").toLocaleString()}</span>
             </li>
           </ul>
         </div>
@@ -64,4 +64,4 @@ const user = data.session.user;
       </div>
     </div>
   </div>
-</Layout> 
+</Layout>

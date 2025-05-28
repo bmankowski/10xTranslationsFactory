@@ -1,24 +1,10 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export interface Database {
   public: {
-    Tables: {
-      // Add your database tables here
-    }
-    Views: {
-      // Add your views here
-    }
-    Functions: {
-      // Add your functions here
-    }
-    Enums: {
-      // Add your enums here
-    }
-  }
+    Tables: Record<string, never>;
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+  };
 }

@@ -1,27 +1,29 @@
 ---
-import { supabase } from '../../db/supabase';
-import type { TextWithQuestionsDTO } from '../../types';
-import { formatDistanceToNow } from 'date-fns';
-import Layout from '../../layouts/Layout.astro';
+import { supabase } from "../../db/supabase";
+import type { TextWithQuestionsDTO } from "../../types";
+import { formatDistanceToNow } from "date-fns";
+import Layout from "../../layouts/Layout.astro";
 
 // Get text ID from params
 const { textId } = Astro.params;
 
 // Fetch text data with related entities and questions in a single query
 const { data: exerciseData, error: textError } = await supabase
-  .from('texts')
-  .select(`
+  .from("texts")
+  .select(
+    `
     *,
     language:language_id(*),
     proficiency_level:proficiency_level_id(*),
     questions(*)
-  `)
-  .eq('id', textId)
-  .eq('is_deleted', false)
+  `
+  )
+  .eq("id", textId)
+  .eq("is_deleted", false)
   .single<TextWithQuestionsDTO>();
 
 if (textError) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 ---
 
@@ -40,18 +42,24 @@ if (textError) {
               </p>
             </div>
             <div class="flex gap-2">
-              <span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                exerciseData.visibility === 'public' 
-                  ? 'bg-purple-500/30 text-purple-100' 
-                  : 'bg-indigo-500/30 text-indigo-100'
-              }`}>
+              <span
+                class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  exerciseData.visibility === "public"
+                    ? "bg-purple-500/30 text-purple-100"
+                    : "bg-indigo-500/30 text-indigo-100"
+                }`}
+              >
                 {exerciseData.visibility}
               </span>
-              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-indigo-500/30 text-indigo-100">
-                {exerciseData.language?.name ?? 'Unknown Language'}
+              <span
+                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-indigo-500/30 text-indigo-100"
+              >
+                {exerciseData.language?.name ?? "Unknown Language"}
               </span>
-              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-100">
-                {exerciseData.proficiency_level?.name ?? 'Unknown Level'}
+              <span
+                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-100"
+              >
+                {exerciseData.proficiency_level?.name ?? "Unknown Level"}
               </span>
             </div>
           </div>
@@ -60,9 +68,7 @@ if (textError) {
             <div>
               <h3 class="text-lg font-semibold mb-2 text-white">Content</h3>
               <div class="prose prose-sm max-w-none text-gray-200">
-                {exerciseData.content.split('\n').map((paragraph: string) => (
-                  <p class="mb-4">{paragraph}</p>
-                ))}
+                {exerciseData.content.split("\n").map((paragraph: string) => <p class="mb-4">{paragraph}</p>)}
               </div>
             </div>
 
@@ -84,11 +90,13 @@ if (textError) {
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 class="font-medium text-white">Language</h4>
-                <p class="text-gray-300">{exerciseData.language?.name ?? 'Unknown Language'} ({exerciseData.language?.code ?? '??'})</p>
+                <p class="text-gray-300">
+                  {exerciseData.language?.name ?? "Unknown Language"} ({exerciseData.language?.code ?? "??"})
+                </p>
               </div>
               <div>
                 <h4 class="font-medium text-white">Proficiency Level</h4>
-                <p class="text-gray-300">{exerciseData.proficiency_level?.name ?? 'Unknown Level'}</p>
+                <p class="text-gray-300">{exerciseData.proficiency_level?.name ?? "Unknown Level"}</p>
               </div>
             </div>
 
@@ -96,26 +104,31 @@ if (textError) {
 
             <div>
               <h3 class="text-lg font-semibold mb-4 text-white">Questions</h3>
-              {exerciseData.questions && exerciseData.questions.length > 0 ? (
-                <div class="space-y-4">
-                  {exerciseData.questions.map((question, index) => (
-                    <div class="bg-white/5 rounded-lg p-4">
-                      <div class="flex items-start gap-3">
-                        <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-indigo-500/30 text-indigo-100 text-sm font-medium">
-                          {index + 1}
-                        </span>
-                        <p class="text-gray-200">{question.content}</p>
+              {
+                exerciseData.questions && exerciseData.questions.length > 0 ? (
+                  <div class="space-y-4">
+                    {exerciseData.questions.map((question, index) => (
+                      <div class="bg-white/5 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                          <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-indigo-500/30 text-indigo-100 text-sm font-medium">
+                            {index + 1}
+                          </span>
+                          <p class="text-gray-200">{question.content}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p class="text-gray-400 italic">No questions available for this exercise.</p>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p class="text-gray-400 italic">No questions available for this exercise.</p>
+                )
+              }
             </div>
 
             <div class="flex justify-end mt-6">
-              <a href={`/exercises/${exerciseData.id}/attempt`} class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100">
+              <a
+                href={`/exercises/${exerciseData.id}/attempt`}
+                class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100"
+              >
                 Take Exercise
               </a>
             </div>
@@ -124,4 +137,4 @@ if (textError) {
       </div>
     </main>
   </div>
-</Layout> 
+</Layout>

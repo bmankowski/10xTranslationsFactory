@@ -1,11 +1,9 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import ExerciseLanguageFilter from '@/components/ExerciseLanguageFilter';
-import ExerciseCard from '@/components/ExerciseCard.astro';
-import { fetchLanguages, fetchTexts } from '@/lib/apiClient';
-import { format } from 'date-fns';
-import type { LanguageDTO, TextDTO, AstroUser } from '@/types';
-import { Fragment } from 'react';
+import Layout from "@/layouts/Layout.astro";
+import ExerciseLanguageFilter from "@/components/ExerciseLanguageFilter";
+import ExerciseCard from "@/components/ExerciseCard.astro";
+import { fetchLanguages, fetchTexts } from "@/lib/apiClient";
+import type { LanguageDTO, TextDTO } from "@/types";
 
 // Server-side data fetching with error handling
 let languages: LanguageDTO[] = [];
@@ -14,21 +12,20 @@ let fetchError = null;
 
 try {
   languages = await fetchLanguages();
-  activeLanguages = languages.filter(lang => lang.is_active);
+  activeLanguages = languages.filter((lang) => lang.is_active);
 } catch (err) {
-  console.error("Failed to fetch languages:", err);
   fetchError = `Failed to load languages: ${err instanceof Error ? err.message : String(err)}`;
 }
 
 // Get language_id from URL query param if it exists
-const language_id = Astro.url.searchParams.get('language_id');
+const language_id = Astro.url.searchParams.get("language_id");
 
 // Get user from Astro.locals
 const user = Astro.locals.user;
 
 // Pagination parameters
 const limit = 6;
-const page = parseInt(Astro.url.searchParams.get('page') || '1');
+const page = parseInt(Astro.url.searchParams.get("page") || "1");
 const offset = (page - 1) * limit;
 
 // Fetch texts based on current filters
@@ -38,9 +35,11 @@ let error = fetchError;
 
 if (!fetchError) {
   try {
-    ({ texts, pagination: { total: totalItems } } = await fetchTexts(limit, offset, language_id));
+    ({
+      texts,
+      pagination: { total: totalItems },
+    } = await fetchTexts(limit, offset, language_id));
   } catch (err) {
-    console.error("Failed to fetch texts:", err);
     error = `Failed to load exercises: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
@@ -53,73 +52,88 @@ const totalPages = Math.ceil(totalItems / limit);
     <main class="container mx-auto py-8 px-4">
       <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-          <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">My Exercises</h1>
-          <a href="/exercise/generate" class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100 inline-block">
+          <h1
+            class="text-3xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent"
+          >
+            My Exercises
+          </h1>
+          <a
+            href="/exercise/generate"
+            class="px-4 py-2 bg-white text-indigo-900 rounded hover:bg-gray-100 inline-block"
+          >
             Generate New Text
           </a>
         </div>
-        
-        <!-- Language Filter (client-side component) -->
-        {!error && (
-          <div class="mb-6">
-            <ExerciseLanguageFilter 
-              languages={activeLanguages} 
-              selectedLanguageId={language_id || null}
-              client:load
-            />
-          </div>
-        )}
 
-        {error && (
-          <div class="text-red-500 p-4 rounded-lg border border-red-300 bg-red-50">
-            <p>{error}</p>
-            <a href={Astro.url.pathname} class="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm inline-block">
-              Retry
-            </a>
-          </div>
-        )}
+        <!-- Language Filter (client-side component) -->
+        {
+          !error && (
+            <div class="mb-6">
+              <ExerciseLanguageFilter
+                languages={activeLanguages}
+                selectedLanguageId={language_id || null}
+                client:load
+              />
+            </div>
+          )
+        }
+
+        {
+          error && (
+            <div class="text-red-500 p-4 rounded-lg border border-red-300 bg-red-50">
+              <p>{error}</p>
+              <a
+                href={Astro.url.pathname}
+                class="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm inline-block"
+              >
+                Retry
+              </a>
+            </div>
+          )
+        }
 
         <!-- Exercise Cards List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {!error && texts.length === 0 && (
-            <div class="col-span-full p-8 text-center bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-md">
-              <p class="text-white mb-4">No exercises found.</p>
-            </div>
-          )}
-          
-          {!error && (
-            texts.map((text) => (
-              <ExerciseCard 
-                text={text}
-                isOwner={text.user_id === user?.id}
-              />
-            ))
-          )}
+          {
+            !error && texts.length === 0 && (
+              <div class="col-span-full p-8 text-center bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-md">
+                <p class="text-white mb-4">No exercises found.</p>
+              </div>
+            )
+          }
+
+          {!error && texts.map((text) => <ExerciseCard text={text} isOwner={text.user_id === user?.id} />)}
         </div>
 
         <!-- Pagination Controls -->
-        {totalPages > 1 && (
-          <div class="mt-6 flex justify-center gap-2">
-            {page > 1 && (
-              <a href={`?page=${page-1}${language_id ? `&language_id=${language_id}` : ''}`} 
-                 class="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20">
-                Previous
-              </a>
-            )}
-            
-            <span class="px-3 py-1 text-white">
-              Page {page} of {totalPages}
-            </span>
-            
-            {page < totalPages && (
-              <a href={`?page=${page+1}${language_id ? `&language_id=${language_id}` : ''}`}
-                 class="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20">
-                Next
-              </a>
-            )}
-          </div>
-        )}
+        {
+          totalPages > 1 && (
+            <div class="mt-6 flex justify-center gap-2">
+              {page > 1 && (
+                <a
+                  href={`?page=${page - 1}${language_id ? `&language_id=${language_id}` : ""}`}
+                  class="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20"
+                >
+                  Previous
+                </a>
+              )}
+
+              <span class="px-3 py-1 text-white">
+                Page {page} of {totalPages}
+              </span>
+
+              {page < totalPages && (
+                <a
+                  href={`?page=${page + 1}${language_id ? `&language_id=${language_id}` : ""}`}
+                  class="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20"
+                >
+                  Next
+                </a>
+              )}
+            </div>
+          )
+        }
       </div>
     </main>
   </div>
-</Layout> 
+</Layout>

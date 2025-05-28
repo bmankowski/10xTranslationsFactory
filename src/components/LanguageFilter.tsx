@@ -1,12 +1,6 @@
-import React from 'react';
-import type { LanguageDTO } from '@/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"; // Assumes Shadcn Select is installed at this path
+import React from "react";
+import type { LanguageDTO } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Assumes Shadcn Select is installed at this path
 
 interface LanguageFilterProps {
   languages: LanguageDTO[];
@@ -19,16 +13,16 @@ const LanguageFilter: React.FC<LanguageFilterProps> = ({
   languages,
   selectedLanguageId,
   onFilterChange,
-  className = '',
+  className = "",
 }) => {
   // Handle value change from Shadcn Select
   const handleValueChange = (value: string) => {
-    onFilterChange(value === 'all' ? null : value);
+    onFilterChange(value === "all" ? null : value);
   };
 
   // Determine the value prop for the Select component
   // Map null to 'all' since Select needs string values
-  const selectValue = selectedLanguageId === null ? 'all' : selectedLanguageId;
+  const selectValue = selectedLanguageId === null ? "all" : selectedLanguageId;
 
   return (
     <div className={`w-full md:w-64 ${className}`}>
@@ -42,7 +36,7 @@ const LanguageFilter: React.FC<LanguageFilterProps> = ({
         <SelectContent>
           {/* "All Languages" option */}
           <SelectItem value="all">All Languages</SelectItem>
-          
+
           {/* Map available languages to SelectItem components */}
           {languages.map((lang) => (
             <SelectItem key={lang.id} value={lang.id}>
@@ -55,4 +49,4 @@ const LanguageFilter: React.FC<LanguageFilterProps> = ({
   );
 };
 
-export default LanguageFilter; 
+export default LanguageFilter;

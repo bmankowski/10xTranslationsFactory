@@ -1,5 +1,5 @@
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function KitchenSinkSelect() {
   return (
@@ -15,4 +15,4 @@ export function KitchenSinkSelect() {
       </SelectContent>
     </Select>
   );
-} 
+}

@@ -1,29 +1,29 @@
-import { defineMiddleware } from 'astro:middleware';
-import { isProtectedRoute } from '../lib/auth';
-import { supabase } from '@/db/supabase';
+import { defineMiddleware } from "astro:middleware";
+import { isProtectedRoute } from "../lib/auth";
+import { supabase } from "@/db/supabase";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-	const { request, cookies, redirect } = context;
-	const url = new URL(request.url);
-	const pathname = url.pathname;
+  const { request, redirect } = context;
+  const url = new URL(request.url);
+  const pathname = url.pathname;
 
-	// Always get session data
-	const { data } = await supabase.auth.getSession();
-	
-	// Set user in locals for all routes
-	if (data.session) {
-		context.locals.user = data.session.user;
-	}
+  // Always get session data
+  const { data } = await supabase.auth.getSession();
 
-	// Check if path requires authentication
-	const requiresAuth = isProtectedRoute(pathname);
+  // Set user in locals for all routes
+  if (data.session) {
+    context.locals.user = data.session.user;
+  }
 
-	if (requiresAuth && !data.session) {
-		// Redirect to login page with return URL
-		const redirectTo = encodeURIComponent(pathname + url.search);
-		return redirect(`/auth/login?redirectTo=${redirectTo}`);
-	}
+  // Check if path requires authentication
+  const requiresAuth = isProtectedRoute(pathname);
 
-	// Continue to the requested page
-	return next();
-}); 
+  if (requiresAuth && !data.session) {
+    // Redirect to login page with return URL
+    const redirectTo = encodeURIComponent(pathname + url.search);
+    return redirect(`/auth/login?redirectTo=${redirectTo}`);
+  }
+
+  // Continue to the requested page
+  return next();
+});

@@ -1,6 +1,6 @@
-import { afterEach, expect } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom/vitest';
+import { afterEach, expect } from "vitest";
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 
 // Extend Vitest's expect method with jest-dom's matchers
 expect.extend({
@@ -16,7 +16,7 @@ afterEach(() => {
 // vi.stubGlobal('fetch', vi.fn());
 
 // Global mocks for Supabase and other services
-vi.mock('@supabase/supabase-js', () => {
+vi.mock("@supabase/supabase-js", () => {
   return {
     createClient: vi.fn(() => ({
       auth: {
@@ -38,4 +38,4 @@ vi.mock('@supabase/supabase-js', () => {
       })),
     })),
   };
-}); 
+});
