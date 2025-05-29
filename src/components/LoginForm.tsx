@@ -68,7 +68,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
         credentials: "include", // Important: include cookies
       });
 
-      const data = await response.json();
+      // Debug: log response details
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        setErrorMessage(
+          `API returned invalid JSON. Parse error: ${parseError}. Response: ${responseText.substring(0, 200)}...`
+        );
+        return;
+      }
 
       if (!response.ok) {
         setErrorMessage(data.error || "Failed to sign in");

@@ -10,13 +10,9 @@
 #   command = "npm run build:netlify"
 #   publish = "dist"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# Obsługa SPA routing
+# Obsługa SPA routing - tylko dla stron, nie dla API
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+  force = false 

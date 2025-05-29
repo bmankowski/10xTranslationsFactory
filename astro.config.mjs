@@ -43,5 +43,7 @@ export default defineConfig({
     },
     cacheDir: "./node_modules/.vite", // Set a valid path instead of null
   },
-  adapter: netlify(),
+  adapter: netlify({
+    edgeMiddleware: true,
+  }),
 });
