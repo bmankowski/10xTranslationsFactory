@@ -19,8 +19,6 @@ test.describe("Exercise Chat Flow", () => {
       throw new Error("No exercises found on the page. Test data might not be seeded properly.");
     }
 
-    console.log(`Found ${exerciseCount} exercises`);
-
     // Znajdź pierwszy link do ćwiczenia (nie attempt link)
     const exerciseLink = exerciseLinks.first();
     await expect(exerciseLink).toBeVisible();
@@ -157,15 +155,6 @@ test.describe("Exercise Chat Flow", () => {
     // Sprawdzamy tylko czy struktura jest prawidłowa
     if (await returnButton.isVisible()) {
       await expect(returnButton).toBeVisible();
-    }
-
-    // If return button is not visible, we can try completing the exercise
-    // by answering all questions correctly
-    const textInput = page.locator('input[type="text"][aria-label="Answer input"]');
-    const submitButton = page.locator('button:has-text("Send")');
-
-    if ((await textInput.isVisible()) && (await submitButton.isVisible())) {
-      console.log("Exercise not completed yet, this is expected for this test");
     }
   });
 });
