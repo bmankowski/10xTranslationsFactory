@@ -37,6 +37,22 @@ export default defineConfig({
       modulePreload: false,
       cssCodeSplit: false,
     },
+    ssr: {
+      external: [
+        "ws",
+        "@supabase/node-fetch",
+        "@supabase/supabase-js",
+        "http",
+        "https",
+        "stream",
+        "crypto",
+        "url",
+        "zlib",
+        "net",
+        "tls",
+      ],
+      noExternal: [],
+    },
     clearScreen: false, // Usuwa zbędne komunikaty na ekranie
     optimizeDeps: {
       include: ["react", "react-dom"],
@@ -44,6 +60,6 @@ export default defineConfig({
     cacheDir: "./node_modules/.vite", // Set a valid path instead of null
   },
   adapter: netlify({
-    edgeMiddleware: true,
+    edgeMiddleware: false,
   }),
 });
