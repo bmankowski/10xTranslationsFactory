@@ -4,10 +4,11 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
-import node from "@astrojs/node";
+import netlify from "@astrojs/netlify";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://devserver-master--stirring-halva-7cc45b.netlify.app",
   output: "server",
   integrations: [
     react({
@@ -42,5 +43,5 @@ export default defineConfig({
     },
     cacheDir: "./node_modules/.vite", // Set a valid path instead of null
   },
-  adapter: node({ mode: "standalone" }),
+  adapter: netlify(),
 });

@@ -1,0 +1,22 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Jeśli używasz SSR (opcja 2), użyj tego zamiast powyższego:
+# [build]
+#   command = "npm run build:netlify"
+#   publish = "dist"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Obsługa SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 
