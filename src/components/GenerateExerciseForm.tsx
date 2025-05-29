@@ -99,7 +99,12 @@ export default function GenerateExerciseForm() {
       try {
         // Fetch languages
         const languagesResponse = await fetch("/api/languages");
+        console.log("Languages response status:", languagesResponse.status);
+        console.log("Languages response headers:", languagesResponse.headers);
+        
         if (!languagesResponse.ok) {
+          const errorText = await languagesResponse.text();
+          console.log("Languages error response:", errorText);
           throw new Error("Failed to fetch languages");
         }
         const languagesData = await languagesResponse.json();
