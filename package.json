@@ -6,6 +6,7 @@
     "clean": "rm -rf .astro dist node_modules/.vite",
     "dev": "astro dev --port ${PORT:-3000}",
     "build": "astro build",
+    "build:prod": "NODE_ENV=production astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint .",
