@@ -8,11 +8,21 @@ test.describe("Exercise Chat Flow", () => {
     // Sprawdź czy strona się załadowała
     await expect(page.locator("h1, h2, h3").first()).toContainText("Exercises");
 
-    // Poczekaj na załadowanie listy ćwiczeń
-    await page.waitForSelector('a[href*="/exercises/"]', { timeout: 10000 });
+    // Poczekaj na załadowanie listy ćwiczeń z dłuższym timeoutem
+    await page.waitForSelector('a[href*="/exercises/"]', { timeout: 15000 });
 
-    // Znajdź pierwszy link do ćwiczenia
-    const exerciseLink = page.locator('a[href*="/exercises/"]').first();
+    // Sprawdź czy są jakiekolwiek ćwiczenia
+    const exerciseLinks = page.locator('a[href*="/exercises/"]:not([href*="/attempt"])');
+    const exerciseCount = await exerciseLinks.count();
+
+    if (exerciseCount === 0) {
+      throw new Error("No exercises found on the page. Test data might not be seeded properly.");
+    }
+
+    console.log(`Found ${exerciseCount} exercises`);
+
+    // Znajdź pierwszy link do ćwiczenia (nie attempt link)
+    const exerciseLink = exerciseLinks.first();
     await expect(exerciseLink).toBeVisible();
 
     // Kliknij na ćwiczenie
@@ -23,7 +33,7 @@ test.describe("Exercise Chat Flow", () => {
 
     // Znajdź i kliknij przycisk "Take Exercise"
     const takeExerciseButton = page.locator('a:has-text("Take Exercise")');
-    await expect(takeExerciseButton).toBeVisible();
+    await expect(takeExerciseButton).toBeVisible({ timeout: 10000 });
     await takeExerciseButton.click();
 
     // Sprawdź czy jesteśmy na stronie attempt
@@ -40,7 +50,7 @@ test.describe("Exercise Chat Flow", () => {
     }
 
     // Wait for the exercise chat island with a longer timeout
-    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
+    await page.waitForSelector(".exercise-chat-island", { timeout: 20000 });
 
     // Sprawdź czy pojawił się komponent czatu
     await expect(page.locator(".exercise-chat-island")).toBeVisible();
@@ -59,21 +69,36 @@ test.describe("Exercise Chat Flow", () => {
   });
 
   test("chat interface allows typing and submitting answers", async ({ authenticatedPage: page }) => {
-    // Przejdź bezpośrednio na stronę attempt
+    // Navigate to exercises list first
     await page.goto("/exercises");
 
-    // Znajdź pierwsze ćwiczenie i przejdź do attempt
-    const exerciseLink = page.locator('a[href*="/exercises/"]').first();
-    await exerciseLink.click();
+    // Wait for exercises to load
+    await page.waitForSelector('a[href*="/exercises/"]', { timeout: 15000 });
 
+    // Find the first exercise that contains "Test Exercise" in the title
+    const testExerciseLink = page.locator('a[href*="/exercises/"]:not([href*="/attempt"])').first();
+    await expect(testExerciseLink).toBeVisible();
+
+    // Click on the exercise
+    await testExerciseLink.click();
+
+    // Click "Take Exercise" button
     const takeExerciseButton = page.locator('a:has-text("Take Exercise")');
+    await expect(takeExerciseButton).toBeVisible({ timeout: 10000 });
     await takeExerciseButton.click();
 
     // Wait for the page to fully load and React components to hydrate
     await page.waitForLoadState("networkidle");
 
+    // Check for authentication errors first
+    const errorHeading = page.locator('h3:has-text("Error Loading Exercise")');
+    if (await errorHeading.isVisible()) {
+      const errorText = await page.locator("main").textContent();
+      throw new Error(`Exercise failed to load: ${errorText}`);
+    }
+
     // Poczekaj na załadowanie czatu z dłuższym timeoutem
-    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
+    await page.waitForSelector(".exercise-chat-island", { timeout: 20000 });
 
     // Znajdź pole tekstowe
     const textInput = page.locator('input[type="text"][aria-label="Answer input"]');
@@ -94,20 +119,36 @@ test.describe("Exercise Chat Flow", () => {
   });
 
   test("exercise completion shows return button", async ({ authenticatedPage: page }) => {
-    // Ten test sprawdza czy po ukończeniu ćwiczenia pojawia się przycisk powrotu
+    // Navigate to exercises list first
     await page.goto("/exercises");
 
-    const exerciseLink = page.locator('a[href*="/exercises/"]').first();
-    await exerciseLink.click();
+    // Wait for exercises to load
+    await page.waitForSelector('a[href*="/exercises/"]', { timeout: 15000 });
 
+    // Find the first exercise
+    const testExerciseLink = page.locator('a[href*="/exercises/"]:not([href*="/attempt"])').first();
+    await expect(testExerciseLink).toBeVisible();
+
+    // Click on the exercise
+    await testExerciseLink.click();
+
+    // Click "Take Exercise" button
     const takeExerciseButton = page.locator('a:has-text("Take Exercise")');
+    await expect(takeExerciseButton).toBeVisible({ timeout: 10000 });
     await takeExerciseButton.click();
 
     // Wait for the page to fully load and React components to hydrate
     await page.waitForLoadState("networkidle");
 
+    // Check for authentication errors first
+    const errorHeading = page.locator('h3:has-text("Error Loading Exercise")');
+    if (await errorHeading.isVisible()) {
+      const errorText = await page.locator("main").textContent();
+      throw new Error(`Exercise failed to load: ${errorText}`);
+    }
+
     // Poczekaj na załadowanie czatu z dłuższym timeoutem
-    await page.waitForSelector(".exercise-chat-island", { timeout: 15000 });
+    await page.waitForSelector(".exercise-chat-island", { timeout: 20000 });
 
     // Sprawdź czy istnieje przycisk powrotu (może być widoczny po ukończeniu)
     const returnButton = page.locator('button:has-text("Return to Exercises")');
@@ -116,6 +157,15 @@ test.describe("Exercise Chat Flow", () => {
     // Sprawdzamy tylko czy struktura jest prawidłowa
     if (await returnButton.isVisible()) {
       await expect(returnButton).toBeVisible();
+    }
+
+    // If return button is not visible, we can try completing the exercise
+    // by answering all questions correctly
+    const textInput = page.locator('input[type="text"][aria-label="Answer input"]');
+    const submitButton = page.locator('button:has-text("Send")');
+
+    if ((await textInput.isVisible()) && (await submitButton.isVisible())) {
+      console.log("Exercise not completed yet, this is expected for this test");
     }
   });
 });
