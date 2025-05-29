@@ -13,21 +13,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Create server-side Supabase client
     const supabase = createServerSupabaseClient(cookies);
 
-    // Get current user session
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Get authenticated user data (more secure than getSession)
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-    if (!sessionData.session) {
+    if (!userData.user || userError) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 401 });
     }
 
     // Check if user email exists
-    if (!sessionData.session.user.email) {
+    if (!userData.user.email) {
       return new Response(JSON.stringify({ error: "User email not found" }), { status: 400 });
     }
 
     // First verify the current password by attempting to sign in
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: sessionData.session.user.email,
+      email: userData.user.email,
       password: currentPassword,
     });
 

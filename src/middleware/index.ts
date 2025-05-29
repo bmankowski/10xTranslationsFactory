@@ -10,18 +10,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Create a server-side Supabase client with simplified cookie handling
   const supabase = createServerSupabaseClient(cookies);
 
-  // Always get session data
-  const { data } = await supabase.auth.getSession();
+  // Get authenticated user data (more secure than getSession)
+  const { data: userData, error } = await supabase.auth.getUser();
 
   // Set user in locals for all routes
-  if (data.session) {
-    context.locals.user = data.session.user;
+  if (userData.user && !error) {
+    context.locals.user = userData.user;
   }
 
   // Check if path requires authentication
   const requiresAuth = isProtectedRoute(pathname);
 
-  if (requiresAuth && !data.session) {
+  if (requiresAuth && (!userData.user || error)) {
     // Redirect to login page with return URL
     const redirectTo = encodeURIComponent(pathname + url.search);
     return redirect(`/auth/login?redirectTo=${redirectTo}`);
