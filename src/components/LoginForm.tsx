@@ -69,11 +69,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
       });
 
       // Debug: log response details
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
       const responseText = await response.text();
-      console.log("Response text:", responseText);
-
       // Try to parse as JSON
       let data;
       try {

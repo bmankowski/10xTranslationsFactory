@@ -93,50 +93,34 @@ export default function GenerateExerciseForm() {
 
   // Fetch languages and proficiency levels on component mount
   React.useEffect(() => {
-    console.log("GenerateExerciseForm useEffect triggered");
-    
     const fetchInitialData = async () => {
-      console.log("Starting fetchInitialData");
       setIsLoading(true);
 
       try {
-        console.log("About to fetch /api/languages");
         // Fetch languages
         const languagesResponse = await fetch("/api/languages");
-        console.log("Languages response status:", languagesResponse.status);
-        console.log("Languages response headers:", languagesResponse.headers);
-        
         if (!languagesResponse.ok) {
-          const errorText = await languagesResponse.text();
-          console.log("Languages error response:", errorText);
           throw new Error("Failed to fetch languages");
         }
         const languagesData = await languagesResponse.json();
-        console.log("Languages data received:", languagesData);
-
-        console.log("About to fetch /api/proficiency-levels");
         // Fetch proficiency levels
         const levelsResponse = await fetch("/api/proficiency-levels");
         if (!levelsResponse.ok) {
           throw new Error("Failed to fetch proficiency levels");
         }
         const levelsData = await levelsResponse.json();
-        console.log("Proficiency levels data received:", levelsData);
 
         // Update state with fetched data
         setLanguages(languagesData);
         setProficiencyLevels(levelsData);
-        console.log("State updated successfully");
       } catch (error) {
-        console.error("Error in fetchInitialData:", error);
         toast({
           title: "Error",
-          description: "Failed to load form data. Please refresh the page.",
+          description: `Failed to load form data. Please refresh the page. ${error}`,
           variant: "destructive",
         });
       } finally {
         setIsLoading(false);
-        console.log("fetchInitialData completed");
       }
     };
 
