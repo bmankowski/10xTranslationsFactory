@@ -9,9 +9,10 @@ function getBaseUrl() {
     // In browser, use relative URL
     return "/api";
   } else {
-    // In server (SSR), use absolute URL with environment variable or hardcoded default
-    // This should match your actual API server
-    return process.env.API_BASE_URL || "http://localhost:3000/api";
+    // In server (SSR), use the current site URL
+    // For Netlify, use the site URL from environment or build the correct URL
+    const siteUrl = process.env.URL || process.env.DEPLOY_URL || "https://teachme.mankowski.es";
+    return `${siteUrl}/api`;
   }
 }
 

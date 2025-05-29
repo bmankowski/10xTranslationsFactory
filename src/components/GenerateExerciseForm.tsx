@@ -93,10 +93,14 @@ export default function GenerateExerciseForm() {
 
   // Fetch languages and proficiency levels on component mount
   React.useEffect(() => {
+    console.log("GenerateExerciseForm useEffect triggered");
+    
     const fetchInitialData = async () => {
+      console.log("Starting fetchInitialData");
       setIsLoading(true);
 
       try {
+        console.log("About to fetch /api/languages");
         // Fetch languages
         const languagesResponse = await fetch("/api/languages");
         console.log("Languages response status:", languagesResponse.status);
@@ -108,18 +112,23 @@ export default function GenerateExerciseForm() {
           throw new Error("Failed to fetch languages");
         }
         const languagesData = await languagesResponse.json();
+        console.log("Languages data received:", languagesData);
 
+        console.log("About to fetch /api/proficiency-levels");
         // Fetch proficiency levels
         const levelsResponse = await fetch("/api/proficiency-levels");
         if (!levelsResponse.ok) {
           throw new Error("Failed to fetch proficiency levels");
         }
         const levelsData = await levelsResponse.json();
+        console.log("Proficiency levels data received:", levelsData);
 
         // Update state with fetched data
         setLanguages(languagesData);
         setProficiencyLevels(levelsData);
-      } catch {
+        console.log("State updated successfully");
+      } catch (error) {
+        console.error("Error in fetchInitialData:", error);
         toast({
           title: "Error",
           description: "Failed to load form data. Please refresh the page.",
@@ -127,6 +136,7 @@ export default function GenerateExerciseForm() {
         });
       } finally {
         setIsLoading(false);
+        console.log("fetchInitialData completed");
       }
     };
 
