@@ -12,8 +12,8 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_URL=${PUBLIC_SUPABASE_URL}
+      - SUPABASE_KEY=${PUBLIC_SUPABASE_ANON_KEY}
     dns:
       - 8.8.8.8
       - 8.8.4.4
